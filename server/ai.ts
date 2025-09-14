@@ -15,8 +15,8 @@ in json formatt
     const res = await fetch("https://api.perplexity.ai/chat/completions", {
         method: "POST",
         headers: {
-            Authorization: `Bearer ${process.env.PERPLEXITY_API_KEY}`,
-          // Replace with your actual API key
+            'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+           // 'Authorization': 'Bearer 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', // Replace with your actual API key
 
             "Content-Type": "application/json",
         },
@@ -68,7 +68,7 @@ export async function generatePlan() {
     //     // Set up the API endpoint and headers
     // const url = 'https://api.perplexity.ai/chat/completions';
     // const headers = {
-    //  
+    //    'Authorization': 'Bearer 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',   
     //  'Authorization': `${process.env.PERPLEXITY_API_KEY}`, // Replace with your actual API key
     //     'Content-Type': 'application/json'
     // };
