@@ -15,7 +15,7 @@ const itineraryItems = [
         time: "10:00 AM - 11:30 AM",
         url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop&crop=center",
         isTransport: true,
-              description:"travel by mtr",
+        description:"travel by mtr",
         hasChange: true,
         hasBook: true
     },
@@ -26,7 +26,7 @@ const itineraryItems = [
         time: "11:30 AM - 1:00 PM",
         url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=300&fit=crop&crop=center",
         isTransport: false,
-                       description:"travel by mtr",
+        description:"travel by mtr",
         hasChange: true,
         hasBook: true
     },
@@ -37,7 +37,7 @@ const itineraryItems = [
         time: "1:30 PM - 3:30 PM",
         url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop&crop=center",
         isTransport: true,
-                     description:"travel by mtr",
+        description:"travel by mtr",
         hasChange: true
     },
     {
@@ -46,8 +46,8 @@ const itineraryItems = [
         title: "Cycling by the Coast",
         time: "4:00 PM - 5:30 PM",
         url: "https://images.unsplash.com/photo-1721699424366-0df0fad02406?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8Y3ljbGUlMjBjb2FzdHxlbnwwfHwwfHx8MA%3D%3D",
-        isTransport: true,
-                 description:"travel by mtr",
+        isTransport: false,
+        description:"travel by mtr",
         hasChange: true,
         hasBook: true
     },
@@ -57,8 +57,8 @@ const itineraryItems = [
         title: "Pet Cafe with Cute Dogs",
         time: "6:00 PM - 7:30 PM",
         url: "https://images.unsplash.com/photo-1578922746465-3a80a228f223?w=400&h=300&fit=crop&crop=center",
-        isTransport: true,
-                       description:"travel by mtr",
+        isTransport: false,
+        description:"travel by mtr",
         hasChange: true,
         hasBook: true
     }
@@ -66,8 +66,6 @@ const itineraryItems = [
 
 export default function Itinerary() {
     const [activeTab, setActiveTab] = useState("Schedule");
-
-
     return (
         <div className="min-h-screen bg-background flex flex-col">
             {/* Header */}
@@ -84,7 +82,7 @@ export default function Itinerary() {
             </header>
 
             {/* Itinerary Content */}
-            <main className="flex-1 px-4 py-6 pb-24 max-w-md mx-auto w-full">
+            <div className="flex-1 px-4 py-6 pb-24 max-w-md mx-auto w-full">
                 <div className="space-y-6">
                     {itineraryItems.map((item) => (
                         <div key={item.id}>
@@ -108,9 +106,7 @@ export default function Itinerary() {
                                             className="w-20 h-20 rounded-lg object-cover"
                                             loading="lazy"
                                         />
-
                                     </div>
-
                                     <div className="flex-1">
                                         <h3 className="font-semibold text-foreground text-base sm:text-lg mb-1">
                                             {item.title}
@@ -118,7 +114,6 @@ export default function Itinerary() {
                                         <p className="text-sm sm:text-base text-muted-foreground mb-3">
                                             {item.time}
                                         </p>
-
                                         <div className="flex gap-3">
                                             {item.hasChange && (
                                                 <Button
@@ -144,7 +139,7 @@ export default function Itinerary() {
                         </div>
                     ))}
                 </div>
-            </main>
+            </div>
 
             <BottomNav />
         </div>
