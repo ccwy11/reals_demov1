@@ -1,5 +1,5 @@
 import React from 'react';
-import Image from 'next/image';
+
 const ItineraryCard = ({ item }) => {
   const typeStyles = {
     meal: 'bg-blue-100 text-blue-800',
@@ -9,7 +9,7 @@ const ItineraryCard = ({ item }) => {
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col md:flex-row">
-          <Image
+          <img
               src={item.image}
               alt={item.title}
               className="w-full md:w-1/3 h-48 object-cover" />

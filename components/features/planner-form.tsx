@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect, useMemo } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeft, Calendar as CalendarIcon } from "lucide-react";
@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
+
 import { generatePlan } from "@/server/ai";
 import { URLSearchParams } from 'url';
 
@@ -65,17 +65,32 @@ type QuestionnaireState = z.infer<typeof QuestionnaireStateSchema>;
 type URLParams = z.infer<typeof URLParamsSchema>;
 
 export default function QuestionnaireForm() {
-    const [searchParams, setSearchParams] = useSearchParams();
+    const searchParams = useSearchParams();
+    const router = useRouter();
     const [currentStep, setCurrentStep] = useState(1);
     const totalSteps = 8;
 
-    const route = useRouter();
+    // Compute tomorrow and default date (one week from today) for calendar constraints
+    const today = useMemo(() => new Date(), []);
+    const tomorrow = useMemo(() => {
+        const t = new Date(today);
+        t.setDate(t.getDate() + 1);
+        t.setHours(0, 0, 0, 0); // Normalize to start of day
+        return t;
+    }, [today]);
 
-    const [month, setMonth] = useState(new Date(2023, 0)); // January 2023
+    const defaultDate = useMemo(() => {
+        const d = new Date(today);
+        d.setDate(today.getDate() + 7);
+        d.setHours(0, 0, 0, 0); // Normalize to start of day
+        return d;
+    }, [today]);
 
-    // Create validated default state
+    const [month, setMonth] = useState(new Date()); // Start with current month/year
+
+    // Create validated default state with default date set to one week from today
     const defaultAnswers: QuestionnaireState = QuestionnaireStateSchema.parse({
-        date: undefined,
+        date: defaultDate,
         dateType: [],
         startTime: "8:00 a.m.",
         endTime: "8:00 p.m.",
@@ -99,43 +114,21 @@ export default function QuestionnaireForm() {
         mode: "onChange"
     });
 
-    // Form values are now managed through individual Controllers
-
     // Load answers from URL on component mount with Zod validation
     useEffect(() => {
-        
         try {
-            if (searchParams instanceof URLSearchParams) {
-                const rawParams = searchParams;
-
-    const step = rawParams.get('step') ?? "1";
-    const date = rawParams.get('date') ?? null;
-    const dateType = rawParams.get('dateType');
-    const startTime = rawParams.get('startTime');
-    const endTime = rawParams.get('endTime');
-    const food = rawParams.get('food');
-    const transportation = rawParams.get('transportation');
-    const budget = rawParams.get('budget');
-    const intensity = rawParams.get('intensity');
-    const location = rawParams.get('location');
-
-                
-            }
-            // const rawParams = {
-            //     step: searchParams.get('step')??"1",
-            //     date: searchParams.get('date')??null,
-            //     dateType: searchParams.get('dateType'),
-            //     startTime: searchParams.get('startTime'),
-            //     endTime: searchParams.get('endTime'),
-            //     food: searchParams.get('food'),
-            //     transportation: searchParams.get('transportation'),
-            //     budget: searchParams.get('budget'),
-            //     intensity: searchParams.get('intensity'),
-            //     location: searchParams.get('location')
-            // };
-
-            // Validate URL parameters
-            const validatedParams = URLParamsSchema.parse(searchParams);
+            const validatedParams = URLParamsSchema.parse({
+                step: searchParams.get("step"),
+                date: searchParams.get("date"),
+                dateType: searchParams.get("dateType"),
+                startTime: searchParams.get("startTime"),
+                endTime: searchParams.get("endTime"),
+                food: searchParams.get("food"),
+                transportation: searchParams.get("transportation"),
+                budget: searchParams.get("budget"),
+                intensity: searchParams.get("intensity"),
+                location: searchParams.get("location"),
+            });
 
             if (validatedParams.step) {
                 setCurrentStep(validatedParams.step);
@@ -143,9 +136,15 @@ export default function QuestionnaireForm() {
 
             if (validatedParams.date) {
                 const parsedDate = new Date(validatedParams.date);
-                if (!isNaN(parsedDate.getTime())) {
+                if (!isNaN(parsedDate.getTime()) && parsedDate >= tomorrow) { // Ensure not before tomorrow
                     setValue('date', parsedDate);
+                } else {
+                    // Fall back to default if invalid
+                    setValue('date', defaultDate);
                 }
+            } else {
+                // Set default if no param
+                setValue('date', defaultDate);
             }
 
             if (validatedParams.dateType) {
@@ -196,8 +195,10 @@ export default function QuestionnaireForm() {
             }
         } catch (error) {
             console.warn('Invalid URL parameters, using defaults:', error);
+            // Ensure default date is set
+            setValue('date', defaultDate);
         }
-    }, [setValue, searchParams]);
+    }, [setValue, searchParams, tomorrow, defaultDate]);
 
     // Update URL whenever form values change
     const updateUrl = (step?: number) => {
@@ -246,8 +247,8 @@ export default function QuestionnaireForm() {
             if (currentValues.location.length > 0) {
                 params.set('location', currentValues.location.join(','));
             }
- window.history.replaceState({}, '', `/path/to/page?${params.toString()}`);
-            // setSearchParams(params);
+
+            router.replace(`/questionnaire?${params.toString()}`, { scroll: false });
         } catch (error) {
             console.error('Failed to update URL:', error);
         }
@@ -256,8 +257,8 @@ export default function QuestionnaireForm() {
     // Update URL only when currentStep changes (not on every form change)
     
     useEffect(() => {
-          // eslint-disable-next-line react-hooks/exhaustive-deps
-        updateUrl(); }, [currentStep]);
+        updateUrl();
+    }, [currentStep]);
 
     // Debounced URL update to prevent excessive updates
     const updateUrlDebounced = () => {
@@ -272,8 +273,10 @@ export default function QuestionnaireForm() {
         const setValueOptions = { shouldDirty: true, shouldTouch: true, shouldValidate: true };
 
         if (currentStep === 1) {
-            const randomDay = Math.floor(Math.random() * 31) + 1;
-            const randomDate = new Date(2023, 0, randomDay);
+            // Set random date from tomorrow onwards (current year/month for relevance)
+            const randomDaysFromTomorrow = Math.floor(Math.random() * 30) + 1; // 1-30 days from tomorrow
+            const randomDate = new Date(tomorrow);
+            randomDate.setDate(tomorrow.getDate() + randomDaysFromTomorrow - 1);
             setValue('date', randomDate, setValueOptions);
             updateUrlDebounced();
         } else if (currentStep === 2) {
@@ -332,7 +335,7 @@ export default function QuestionnaireForm() {
         } else {
             // Generate and download JSON file when questionnaire is completed
             generateJsonFile();
-            route.push("/perplex");
+            router.push("/perplex");
         }
     };
 
@@ -546,7 +549,9 @@ export default function QuestionnaireForm() {
                         </div>
                         <div className="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 mb-6 sm:mb-8 shadow-sm mx-2 sm:mx-0">
                             <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-base sm:text-lg font-medium text-gray-900">January 2023</h2>
+                                <h2 className="text-base sm:text-lg font-medium text-gray-900">
+                                    {month.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                                </h2>
                                 <CalendarIcon className="h-5 w-5 text-gray-400" />
                             </div>
                             <Controller
@@ -557,15 +562,19 @@ export default function QuestionnaireForm() {
                                         mode="single"
                                         selected={field.value}
                                         onSelect={(date) => {
-                                            field.onChange(date);
-                                            updateUrlDebounced();
+                                            if (date && date >= tomorrow) { // Enforce selection >= tomorrow
+                                                field.onChange(date);
+                                                updateUrlDebounced();
+                                            }
                                         }}
                                         month={month}
                                         onMonthChange={setMonth}
+                                        disabled={(date) => date < tomorrow} // Disable dates before tomorrow
                                         className="w-full"
                                         classNames={{
                                             day_selected: "bg-red-500 text-white hover:bg-red-600 focus:bg-red-600",
                                             day_today: "bg-gray-100 text-gray-900",
+                                            day_disabled: "text-gray-400 cursor-not-allowed"
                                         }}
                                     />
                                 )}
@@ -907,13 +916,7 @@ export default function QuestionnaireForm() {
     };
 
 
-    /*************  ✨ Windsurf Command ⭐  *************/
-    /**
-     * Generates a plan using the provided form values.
-     *
-     * @return {Promise<void>} A promise that resolves when the plan is generated. The response is logged to the console.
-     */
-    /*******  fc98ca5c-cd02-435a-9e8c-07fb0efcc013  *******/
+
     async function submitGenerate() {
         await generatePlan
         console.log("Plan generated successfully");

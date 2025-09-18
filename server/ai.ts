@@ -10,7 +10,12 @@ export async function callPerplexityAPI() {
     
  Generate a full day itinerary for a single day in HongKong for a traveler interested in art, culture, and food.
   Include 4-5 activities covering morning, afternoon, and evening. Each activity should be a JSON object with the following fields:
-   'id' (unique integer starting from 1), 'type' (e.g., 'exhibition', 'meal', 'tour', 'event'), 'title' (descriptive name), 'time' (format: 'HH:MM AM/PM - HH:MM AM/PM'), 'image' (placeholder URL like 'https://images.unsplash.com/photo-[id]?w=400&h=300&fit=crop&crop=center', with unique photo IDs), and 'hasChange' (set to true). Ensure activities are logically sequenced, feasible in timing and location, and align with the interests. Return as a JSON array.
+   'id' (unique integer starting from 1), 'type' (e.g., 'exhibition', 'meal', 'tour', 'event'), 'title' (descriptive name),
+   'time' (format: 'HH:MM AM/PM - HH:MM AM/PM'), 
+   'image' (placeholder URL from unsplash.com),
+   'travel' (with 30 text character to describe transportation)
+   and 'hasChange' (set to true).
+   Ensure activities are logically sequenced, feasible in timing and location, and align with the interests. Return as a JSON array.
 in json formatt
     `
     // if (!process.env.PERPLEXITY_API_KEY) throw new Error("Missing API key");

@@ -9,13 +9,19 @@ import ItineraryDisplay from "@/components/ItineraryDisplay";
 export default function Perplex() {
   const [itineraryData, setItineraryData] = useState(null);
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const testAPI = async () => {
+    setIsLoading(true);
     setItineraryData(null);
     setError(null);
     try {
       const data = await callPerplexityAPI();
-      let responseContent = data.choices[0].message.content;
+      let responseContent = data?.choices?.[0]?.message?.content;
+
+      if (!responseContent) {
+        throw new Error("No content received from API");
+      }
 
       // Clean the response: extract the JSON array between [ and ]
       const jsonMatch = responseContent.match(/\[[\s\S]*\]/);
@@ -38,8 +44,10 @@ export default function Perplex() {
       }
       setItineraryData(parsedData);
     } catch (error) {
-      console.error("Parsing error:", error.message, "Response content:", responseContent);
+      console.error("API or parsing error:", error.message, "Response content:", responseContent);
       setError(`Error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -48,18 +56,18 @@ export default function Perplex() {
       <h1 style={{ fontSize: "24px", marginBottom: "20px", color: "#333" }}>Perplexity API Test</h1>
       <button
         onClick={testAPI}
-        disabled={itineraryData === null && error === null}
+        disabled={isLoading}
         style={{
           padding: "10px 20px",
           fontSize: "16px",
-          backgroundColor: (itineraryData === null && error === null) ? "#ccc" : "#007bff",
+          backgroundColor: isLoading ? "#ccc" : "#007bff",
           color: "white",
           border: "none",
           borderRadius: "5px",
-          cursor: (itineraryData === null && error === null) ? "not-allowed" : "pointer",
+          cursor: isLoading ? "not-allowed" : "pointer",
         }}
       >
-        {itineraryData === null && error === null ? "Loading..." : "Get Answer"}
+        {isLoading ? "Loading..." : "Get Answer"}
       </button>
       <div style={{
         marginTop: '20px',
