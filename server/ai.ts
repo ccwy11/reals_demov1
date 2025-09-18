@@ -37,6 +37,7 @@ in json formatt
         statusText: res.statusText,
         headers: Object.fromEntries(res.headers.entries()),
         body: data.slice(0, 100),
+        
     });
     if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) {
         throw new Error(res.status === 401 ? "Invalid API key" : `API error: ${res.status}`);
