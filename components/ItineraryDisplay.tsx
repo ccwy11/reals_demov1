@@ -1,15 +1,23 @@
 import React from 'react';
+import Image from 'next/image';
 
-const ItineraryCard = ({ item }) => {
-  const typeStyles = {
+interface ItineraryItem {
+    id: string;
+    image: string;
+    title: string;
+    hasChange?: boolean;
+    time: string;
+    type: 'meal' | 'exhibition' | 'tour';
+}
+const ItineraryCard = ({ item }: { item: ItineraryItem }) => {
+  const typeStyles: Record<ItineraryItem['type'], string> = {
     meal: 'bg-blue-100 text-blue-800',
     exhibition: 'bg-green-100 text-green-800',
     tour: 'bg-purple-100 text-purple-800',
   };
-
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col md:flex-row">
-          <img
+          <Image
               src={item.image}
               alt={item.title}
               className="w-full md:w-1/3 h-48 object-cover" />
@@ -20,15 +28,16 @@ const ItineraryCard = ({ item }) => {
             <span className="text-sm bg-yellow-200 text-yellow-800 px-2 py-1 rounded">Changed</span>
           )}
         </div>
-        <p className="text-gray-600">{item.time}</p>
-        <span className={`inline-block mt-2 px-3 py-1 rounded-full text-sm ${typeStyles[item.type]}`}>
+              <p className="text-gray-600">{item.time}</p>
+              
+       <span className={`inline-block mt-2 px-3 py-1 rounded-full text-sm ${typeStyles[item.type]}`}>
           {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
         </span>
       </div>
     </div>
   );
 };
-
+//@ts-expect-error type error
 const ItineraryDisplay = ({ itineraryData }) => {
   return (
     <div className="container mx-auto p-4">

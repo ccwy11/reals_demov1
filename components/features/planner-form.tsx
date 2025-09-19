@@ -356,6 +356,7 @@ export default function QuestionnaireForm() {
         } else {
             // Generate and download JSON file when questionnaire is completed
             generateJsonFile();
+          
             router.push("/perplex");
         }
     };
@@ -415,6 +416,7 @@ export default function QuestionnaireForm() {
                     step7_intensity: `${validatedAnswers.intensity[0]}%`,
                     step8_location: validatedAnswers.location
                 }
+                
             };
 
             // Validate the final JSON structure
@@ -431,6 +433,9 @@ export default function QuestionnaireForm() {
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
+
+            //save to local
+              localStorage.setItem('questionnaireResults', JSON.stringify(validatedJson));
         } catch (error) {
             console.error('Failed to generate JSON file:', error);
             alert('Error generating JSON file. Please check your answers and try again.');

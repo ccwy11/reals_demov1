@@ -118,8 +118,8 @@ export function PlanForm() {
                     {currentStep === 0 && (
                         <Calendar
                             mode="single"
-                            selected={date}
-                            onSelect={setDate}
+//@ts-expect-error type error
+                            selected={date} onSelect={setDate}
                             className="rounded-md border shadow-sm"
                             captionLayout="dropdown"
                         />

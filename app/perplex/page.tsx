@@ -15,8 +15,9 @@ export default function Perplex() {
     setIsLoading(true);
     setItineraryData(null);
     setError(null);
-    try {
-      const data = await callPerplexityAPI();
+      try {
+          const results = JSON.parse(localStorage.getItem('questionnaireResults') || '{}');
+      const data = await callPerplexityAPI(results);
       let responseContent = data?.choices?.[0]?.message?.content;
 
       if (!responseContent) {
@@ -42,10 +43,12 @@ export default function Perplex() {
       if (!Array.isArray(parsedData)) {
         throw new Error("Parsed response is not an array of itinerary items");
       }
+          
+          //@ts-expect-error type error
       setItineraryData(parsedData);
-    } catch (error) {
-      console.error("API or parsing error:", error.message, "Response content:", responseContent);
-      setError(`Error: ${error.message}`);
+    } catch (error) {   
+          //@ts-expect-error type error
+      console.error("API or parsing error:", error.message, "Response content:", responseContent);      setError(`Error: ${error.message}`);
     } finally {
       setIsLoading(false);
     }

@@ -32,7 +32,7 @@ const JsonOutputSchema = z.object({
 type QuestionnaireResults = z.infer<typeof JsonOutputSchema>;
 
 export async function callPerplexityAPI(results: QuestionnaireResults) {
-    let prompt = `
+    const  prompt = `
     
  Generate a full day itinerary for a single day in HongKong for a traveler interested in art, culture, and food.
   Include 4-5 activities covering morning, afternoon, and evening. Each activity should be a JSON object with the following fields:
