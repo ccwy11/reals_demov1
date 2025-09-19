@@ -1,5 +1,6 @@
 "use server"
 import { z } from "zod"
+import { NextApiRequest, NextApiResponse } from "next";
 import { QuestionnaireStateSchema } from "../components/features/planner-form"
 import { db } from "@/db/drizzle";
 
@@ -12,7 +13,7 @@ export async function callPerplexityAPI() {
   Include 4-5 activities covering morning, afternoon, and evening. Each activity should be a JSON object with the following fields:
    'id' (unique integer starting from 1), 'type' (e.g., 'exhibition', 'meal', 'tour', 'event'), 'title' (descriptive name),
    'time' (format: 'HH:MM AM/PM - HH:MM AM/PM'), 
-   'image' (placeholder URL from unsplash.com),
+   'image' (placeholder URL from unsplash.com, must be ),
    'travel' (with 30 text character to describe transportation)
    and 'hasChange' (set to true).
    Ensure activities are logically sequenced, feasible in timing and location, and align with the interests. Return as a JSON array.
