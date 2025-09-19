@@ -4,8 +4,34 @@ import { QuestionnaireStateSchema } from "../components/features/planner-form"
 import { db } from "@/db/drizzle";
 
 
+const JsonOutputSchema = z.object({
+    metadata: z.object({
+        completedAt: z.string().datetime(),
+        totalSteps: z.number(),
+        version: z.string(),
+        validation: z.object({
+            isValid: z.boolean(),
+            schema: z.string()
+        })
+    }),
+    responses: z.object({
+        step1_date: z.string().nullable(),
+        step2_time: z.object({
+            startTime: z.string(),
+            endTime: z.string()
+        }),
+        step3_date_type: z.array(z.string()),
+        step4_food: z.array(z.string()),
+        step5_transportation: z.string(),
+        step6_budget: z.string().regex(/^HKD \$\d{1,4}$/, "Budget must be in the format 'HKD $number' between HKD $0 and HKD $5000"),
+        step7_intensity: z.string().regex(/^\d{1,3}%$/, "Intensity must be a percentage between 0% and 100%"),
+        step8_location: z.array(z.string())
+    })
+});
 
-export async function callPerplexityAPI() {
+type QuestionnaireResults = z.infer<typeof JsonOutputSchema>;
+
+export async function callPerplexityAPI(results: QuestionnaireResults) {
     let prompt = `
     
  Generate a full day itinerary for a single day in HongKong for a traveler interested in art, culture, and food.
@@ -16,7 +42,8 @@ export async function callPerplexityAPI() {
    'travel' (with 30 text character to describe transportation)
    and 'hasChange' (set to true).
    Ensure activities are logically sequenced, feasible in timing and location, and align with the interests. Return as a JSON array.
-in json formatt
+    in json formatt
+    ${JSON.stringify(results, null, 2)}
     `
     // if (!process.env.PERPLEXITY_API_KEY) throw new Error("Missing API key");
     const res = await fetch("https://api.perplexity.ai/chat/completions", {
@@ -53,7 +80,7 @@ in json formatt
 
 
 
-export async function generatePlan() {
+// export async function generatePlan() {
     // export async function generatePlan(formData: z.infer<typeof QuestionnaireStateSchema>) {
     //     const { date, dateType, startTime, endTime, budget, intensity, location } = formData
 
@@ -96,33 +123,33 @@ export async function generatePlan() {
     // });
 
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `BEARER ${process.env.OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-            messages: [{
-                role: "user",
-                content: "hello"
-                //prompt,
-            }],
-            model: "gpt-4o-mini"
-        }),
-    });
+    // const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    //     method: 'POST',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //         'Authorization': `BEARER ${process.env.OPENAI_API_KEY}`,
+    //     },
+    //     body: JSON.stringify({
+    //         messages: [{
+    //             role: "user",
+    //             content: "hello"
+    //             //prompt,
+    //         }],
+    //         model: "gpt-4o-mini"
+    //     }),
+    // });
 
 
 
 
 
-    const data = await response.json();
+//     const data = await response.json();
 
-    // Print the AI's response
-    console.log(data.choices[0].message.content)
-    console.log(data); // replace with console.log(data.choices[0].message.content) for just the content
+//     // Print the AI's response
+//     console.log(data.choices[0].message.content)
+//     console.log(data); // replace with console.log(data.choices[0].message.content) for just the content
 
-} 
+// } 
 
 // 1. Date
 // - 27/08/2025
