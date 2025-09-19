@@ -3,11 +3,11 @@ import { Hourglass } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BottomNavigation from "@/components/bottomnav";
 
-interface Props {
+interface ComingSoonProps {
   feature?: string;
 }
 
-const ComingSoon: React.FC<Props> = ({ feature }) => {
+const ComingSoon: React.FC<ComingSoonProps> = ({ feature }) => {
   const title = feature ? `${feature} Coming Soon` : "Coming Soon";
   const description = feature
     ? `We're building the ${feature.toLowerCase()} experience. Check back soon!`

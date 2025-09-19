@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useCallback } from "react";
 import { FormMessage } from "@/components/ui/form";
 import { callPerplexityAPI } from "@/server/ai";
 import { URLSearchParams } from 'url';
@@ -225,65 +226,64 @@ export default function QuestionnaireForm() {
         }
     }, [setValue, searchParams, tomorrow, defaultDate]);
 
-    // Update URL whenever form values change
-    const updateUrl = (step?: number) => {
-        try {
-            const currentValues = getValues();
-            const params = new URLSearchParams();
-            const currentStepValue = step || currentStep;
+   const updateUrl = useCallback((step?: number) => {
+    try {
+        const currentValues = getValues();
+        const params = new URLSearchParams();
+        const currentStepValue = step || currentStep;
 
-            // Validate step
-            if (currentStepValue >= 1 && currentStepValue <= totalSteps) {
-                params.set('step', currentStepValue.toString());
-            }
-
-            if (currentValues.date) {
-                params.set('date', currentValues.date.toISOString().split('T')[0]);
-            }
-
-            if (currentValues.dateType.length > 0) {
-                params.set('dateType', currentValues.dateType.join(','));
-            }
-
-            if (currentValues.startTime !== "8:00 a.m.") {
-                params.set('startTime', currentValues.startTime);
-            }
-
-            if (currentValues.endTime !== "8:00 p.m.") {
-                params.set('endTime', currentValues.endTime);
-            }
-
-            if (currentValues.food.length > 0) {
-                params.set('food', currentValues.food.join(','));
-            }
-
-            if (currentValues.transportation) {
-                params.set('transportation', currentValues.transportation);
-            }
-
-            if (currentValues.budget[0] !== 2500) {
-                params.set('budget', currentValues.budget[0].toString());
-            }
-
-            if (currentValues.intensity[0] !== 50) {
-                params.set('intensity', currentValues.intensity[0].toString());
-            }
-
-            if (currentValues.location.length > 0) {
-                params.set('location', currentValues.location.join(','));
-            }
-
-            router.replace(`/questionnaire?${params.toString()}`, { scroll: false });
-        } catch (error) {
-            console.error('Failed to update URL:', error);
+        // Validate step
+        if (currentStepValue >= 1 && currentStepValue <= totalSteps) {
+            params.set('step', currentStepValue.toString());
         }
-    };
 
-    // Update URL only when currentStep changes (not on every form change)
+        if (currentValues.date) {
+            params.set('date', currentValues.date.toISOString().split('T')[0]);
+        }
+
+        if (currentValues.dateType.length > 0) {
+            params.set('dateType', currentValues.dateType.join(','));
+        }
+
+        if (currentValues.startTime !== "8:00 a.m.") {
+            params.set('startTime', currentValues.startTime);
+        }
+
+        if (currentValues.endTime !== "8:00 p.m.") {
+            params.set('endTime', currentValues.endTime);
+        }
+
+        if (currentValues.food.length > 0) {
+            params.set('food', currentValues.food.join(','));
+        }
+
+        if (currentValues.transportation) {
+            params.set('transportation', currentValues.transportation);
+        }
+
+        if (currentValues.budget[0] !== 2500) {
+            params.set('budget', currentValues.budget[0].toString());
+        }
+
+        if (currentValues.intensity[0] !== 50) {
+            params.set('intensity', currentValues.intensity[0].toString());
+        }
+
+        if (currentValues.location.length > 0) {
+            params.set('location', currentValues.location.join(','));
+        }
+
+        router.replace(`/questionnaire?${params.toString()}`, { scroll: false });
+    } catch (error) {
+        console.error('Failed to update URL:', error);
+    }
+    }, [getValues, router, currentStep, totalSteps]);
+
+    // Update URL only when currentStep changes
     useEffect(() => {
         updateUrl();
-    }, [currentStep]);
-
+    }, [currentStep, updateUrl]);
+    
     // Debounced URL update to prevent excessive updates
     const updateUrlDebounced = () => {
         setTimeout(() => {
