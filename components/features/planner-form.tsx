@@ -12,10 +12,16 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { z } from "zod";
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { FormMessage } from "@/components/ui/form";
 import { generatePlan } from "@/server/ai";
 import { URLSearchParams } from 'url';
-
 
 // Zod schemas for validation
 const DateTypeSchema = z.enum([
@@ -33,20 +39,40 @@ const FoodTypeSchema = z.enum([
 const TransportationSchema = z.enum(["Public Transportation", "Driving", ""]);
 
 const LocationSchema = z.enum(["Hong Kong Island", "Kowloon", "New Territories"]);
+const timeOptions = [
+  "7:00 a.m.", "7:30 a.m.", "8:00 a.m.", "8:30 a.m.", "9:00 a.m.", "9:30 a.m.",
+  "10:00 a.m.", "10:30 a.m.", "11:00 a.m.", "11:30 a.m.", "12:00 p.m.",
+  "12:30 p.m.", "1:00 p.m.", "1:30 p.m.", "2:00 p.m.", "2:30 p.m.",
+  "3:00 p.m.", "3:30 p.m.", "4:00 p.m.", "4:30 p.m.", "5:00 p.m.",
+  "5:30 p.m.", "6:00 p.m.", "6:30 p.m.", "7:00 p.m.", "7:30 p.m.",
+  "8:00 p.m.", "8:30 p.m.", "9:00 p.m.", "9:30 p.m.", "10:00 p.m.",
+  "10:30 p.m.", "11:00 p.m."
+];
 
-const TimeSchema = z.string().regex(/^\d{1,2}:\d{2}\s?(a\.m\.|p\.m\.)$/i, "Invalid time format");
+const TimeSchema = z.enum(timeOptions as [string, ...string[]]);
 
 export const QuestionnaireStateSchema = z.object({
-    date: z.date().optional(),
-    dateType: z.array(DateTypeSchema),
-    startTime: TimeSchema,
-    endTime: TimeSchema,
-    food: z.array(FoodTypeSchema),
-    transportation: TransportationSchema,
-    budget: z.array(z.number().min(0).max(5000)).min(1),
-    intensity: z.array(z.number().min(0).max(100)).min(1),
-    location: z.array(LocationSchema)
-});
+  date: z.date().optional(),
+  dateType: z.array(DateTypeSchema),
+  startTime: TimeSchema,
+  endTime: TimeSchema,
+  food: z.array(FoodTypeSchema),
+  transportation: TransportationSchema,
+  budget: z.array(z.number().min(0).max(5000)).min(1),
+  intensity: z.array(z.number().min(0).max(100)).min(1),
+  location: z.array(LocationSchema)
+}).refine(
+  (data) => {
+    if (!data.startTime || !data.endTime) return true; // Skip if not set
+    const startIndex = timeOptions.indexOf(data.startTime);
+    const endIndex = timeOptions.indexOf(data.endTime);
+    return endIndex > startIndex;
+  },
+  {
+    message: "End time must be after start time",
+    path: ["endTime"],
+  }
+);
 
 const URLParamsSchema = z.object({
     step: z.coerce.number().min(1).max(8).optional(),
@@ -146,7 +172,7 @@ export default function QuestionnaireForm() {
                 // Set default if no param
                 setValue('date', defaultDate);
             }
-
+    
             if (validatedParams.dateType) {
                 const dateTypes = validatedParams.dateType.split(',')
                     .filter(Boolean)
@@ -280,14 +306,11 @@ export default function QuestionnaireForm() {
             setValue('date', randomDate, setValueOptions);
             updateUrlDebounced();
         } else if (currentStep === 2) {
-            // Set random time range
-            const startTimes = ["7:00 a.m.", "8:00 a.m.", "9:00 a.m.", "10:00 a.m."];
-            const endTimes = ["6:00 p.m.", "7:00 p.m.", "8:00 p.m.", "9:00 p.m.", "10:00 p.m."];
-            const randomStart = startTimes[Math.floor(Math.random() * startTimes.length)];
-            const randomEnd = endTimes[Math.floor(Math.random() * endTimes.length)];
-            setValue('startTime', randomStart, setValueOptions);
-            setValue('endTime', randomEnd, setValueOptions);
-            updateUrlDebounced();
+         const startIndex = Math.floor(Math.random() * (timeOptions.length - 1)); // Ensure room for endTime
+         const endIndex = startIndex + Math.floor(Math.random() * (timeOptions.length - startIndex - 1)) + 1;
+         setValue("startTime", timeOptions[startIndex], setValueOptions);
+         setValue("endTime", timeOptions[endIndex], setValueOptions);
+         updateUrlDebounced();
         } else if (currentStep === 3) {
             const dateTypes = DateTypeSchema.options;
             const randomType = dateTypes[Math.floor(Math.random() * dateTypes.length)];
@@ -348,142 +371,56 @@ export default function QuestionnaireForm() {
             const validatedAnswers = QuestionnaireStateSchema.parse(currentValues);
 
             // Define JSON output schema
-            const JsonOutputSchema = z.object({
-                metadata: z.object({
-                    completedAt: z.string().datetime(),
-                    totalSteps: z.number(),
-                    version: z.string(),
-                    validation: z.object({
-                        isValid: z.boolean(),
-                        schema: z.string()
-                    })
-                }),
-                responses: z.object({
-                    step1_date: z.object({
-                        question: z.string(),
-                        answer: z.string().nullable(),
-                        type: z.literal("date"),
-                        isValid: z.boolean()
-                    }),
-                    step2_time: z.object({
-                        question: z.string(),
-                        answer: z.object({
-                            startTime: z.string(),
-                            endTime: z.string()
-                        }),
-                        type: z.literal("time_range"),
-                        isValid: z.boolean()
-                    }),
-                    step3_date_type: z.object({
-                        question: z.string(),
-                        answer: z.array(z.string()),
-                        type: z.literal("multiple_choice"),
-                        isValid: z.boolean()
-                    }),
-                    step4_food: z.object({
-                        question: z.string(),
-                        answer: z.array(z.string()),
-                        type: z.literal("multiple_choice"),
-                        isValid: z.boolean()
-                    }),
-                    step5_transportation: z.object({
-                        question: z.string(),
-                        answer: z.string(),
-                        type: z.literal("single_choice"),
-                        isValid: z.boolean()
-                    }),
-                    step6_budget: z.object({
-                        question: z.string(),
-                        answer: z.number(),
-                        type: z.literal("slider"),
-                        range: z.string(),
-                        isValid: z.boolean()
-                    }),
-                    step7_intensity: z.object({
-                        question: z.string(),
-                        answer: z.number(),
-                        type: z.literal("slider"),
-                        range: z.string(),
-                        labels: z.array(z.string()),
-                        isValid: z.boolean()
-                    }),
-                    step8_location: z.object({
-                        question: z.string(),
-                        answer: z.array(z.string()),
-                        type: z.literal("multiple_choice"),
-                        isValid: z.boolean()
-                    })
-                })
-            });
+        const JsonOutputSchema = z.object({
+        metadata: z.object({
+          completedAt: z.string().datetime(),
+          totalSteps: z.number(),
+          version: z.string(),
+          validation: z.object({
+            isValid: z.boolean(),
+            schema: z.string()
+          })
+        }),
+        responses: z.object({
+          step1_date: z.string().nullable(),
+          step2_time: z.object({
+            startTime: z.string(),
+            endTime: z.string()
+          }),
+          step3_date_type: z.array(z.string()),
+          step4_food: z.array(z.string()),
+          step5_transportation: z.string(),
+     step6_budget: z.string().regex(/^HKD \$\d{1,4}$/, "Budget must be in the format 'HKD $number' between HKD $0 and HKD $5000"),
+          step7_intensity: z.string().regex(/^\d{1,3}%$/, "Intensity must be a percentage between 0% and 100%"),
+          step8_location: z.array(z.string())
+        })
+      });
 
-            const questionnaireResults = {
-                metadata: {
-                    completedAt: new Date().toISOString(),
-                    totalSteps: totalSteps,
-                    version: "1.0",
-                    validation: {
-                        isValid: true,
-                        schema: "QuestionnaireStateSchema"
-                    }
-                },
-                responses: {
-                    step1_date: {
-                        question: "When are you planning the date for?",
-                        answer: validatedAnswers.date ? validatedAnswers.date.toISOString().split('T')[0] : null,
-                        type: "date" as const,
-                        isValid: validatedAnswers.date !== undefined
-                    },
-                    step2_time: {
-                        question: "What time of day would you prefer for the date?",
-                        answer: {
-                            startTime: validatedAnswers.startTime,
-                            endTime: validatedAnswers.endTime
-                        },
-                        type: "time_range" as const,
-                        isValid: TimeSchema.safeParse(validatedAnswers.startTime).success &&
-                            TimeSchema.safeParse(validatedAnswers.endTime).success
-                    },
-                    step3_date_type: {
-                        question: "What kind of date would you like to plan?",
-                        answer: validatedAnswers.dateType,
-                        type: "multiple_choice" as const,
-                        isValid: validatedAnswers.dateType.length > 0
-                    },
-                    step4_food: {
-                        question: "I would like to eat...",
-                        answer: validatedAnswers.food,
-                        type: "multiple_choice" as const,
-                        isValid: validatedAnswers.food.length > 0
-                    },
-                    step5_transportation: {
-                        question: "How would you like to get around?",
-                        answer: validatedAnswers.transportation,
-                        type: "single_choice" as const,
-                        isValid: validatedAnswers.transportation !== ""
-                    },
-                    step6_budget: {
-                        question: "What is your budget for the date? (HKD per person)",
-                        answer: validatedAnswers.budget[0],
-                        type: "slider" as const,
-                        range: "0-5000",
-                        isValid: validatedAnswers.budget[0] >= 0 && validatedAnswers.budget[0] <= 5000
-                    },
-                    step7_intensity: {
-                        question: "How intense would you like the date to be?",
-                        answer: validatedAnswers.intensity[0],
-                        type: "slider" as const,
-                        range: "0-100",
-                        labels: ["Chill", "Intense"],
-                        isValid: validatedAnswers.intensity[0] >= 0 && validatedAnswers.intensity[0] <= 100
-                    },
-                    step8_location: {
-                        question: "Do you have a preferred location for the date?",
-                        answer: validatedAnswers.location,
-                        type: "multiple_choice" as const,
-                        isValid: validatedAnswers.location.length > 0
-                    }
-                }
-            };
+        const questionnaireResults = {
+        metadata: {
+          completedAt: new Date().toISOString(),
+          totalSteps: totalSteps,
+          version: "1.0",
+          validation: {
+            isValid: true,
+            schema: "QuestionnaireStateSchema"
+          }
+        },
+        responses: {
+          step1_date: validatedAnswers.date ? validatedAnswers.date.toISOString().split("T")[0] : null,
+          step2_time: {
+            startTime: validatedAnswers.startTime,
+            endTime: validatedAnswers.endTime
+          },
+          step3_date_type: validatedAnswers.dateType,
+          step4_food: validatedAnswers.food,
+          step5_transportation: validatedAnswers.transportation,
+          step6_budget: `HKD $${validatedAnswers.budget[0]}`,
+          step7_intensity: `${validatedAnswers.intensity[0]}%`,
+       
+          step8_location: validatedAnswers.location
+        }
+      };
 
             // Validate the final JSON structure
             const validatedJson = JsonOutputSchema.parse(questionnaireResults);
@@ -540,284 +477,334 @@ export default function QuestionnaireForm() {
         
         switch (currentStep) {
             case 1:
-                return (
+              return (
+          <div>
+            <div className="text-center mb-6 sm:mb-8 px-2">
+              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">
+                When are you planning the date for?
+              </h1>
+            </div>
+            <div className="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 mb-6 sm:mb-8 shadow-sm mx-2 sm:mx-0">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base sm:text-lg font-medium text-gray-900">
+                  {month.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+                </h2>
+                <CalendarIcon className="h-5 w-5 text-gray-400" />
+              </div>
+              <Controller
+                name="date"
+                control={control}
+                render={({ field }) => (
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={(date) => {
+                      if (date && date >= tomorrow) {
+                        field.onChange(date);
+                        updateUrlDebounced();
+                      }
+                    }}
+                    month={month}
+                    onMonthChange={setMonth}
+                    disabled={(date) => date < tomorrow}
+                    className="w-full"
+                    classNames={{
+                      day_selected: "bg-red-500 text-white hover:bg-red-600 focus:bg-red-600",
+                      day_today: "bg-gray-100 text-gray-900",
+                      day_disabled: "text-gray-400 cursor-not-allowed"
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </div>
+        );
+        case 2:
+        return (
+          <div>
+            <div className="text-center mb-6 sm:mb-8 px-2">
+              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">
+                What time of day would you prefer for the date?
+              </h1>
+            </div>
+            <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8 px-2 sm:px-0">
+              <div className="space-y-2">
+                <label className="text-base sm:text-lg font-medium text-gray-900">Start:</label>
+                <Controller
+                  name="startTime"
+                  control={control}
+                  render={({ field }) => (
                     <div>
-                        <div className="text-center mb-6 sm:mb-8 px-2">
-                            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">
-                                When are you planning the date for?
-                            </h1>
-                        </div>
-                        <div className="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 mb-6 sm:mb-8 shadow-sm mx-2 sm:mx-0">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-base sm:text-lg font-medium text-gray-900">
-                                    {month.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                                </h2>
-                                <CalendarIcon className="h-5 w-5 text-gray-400" />
-                            </div>
-                            <Controller
-                                name="date"
-                                control={control}
-                                render={({ field }) => (
-                                    <Calendar
-                                        mode="single"
-                                        selected={field.value}
-                                        onSelect={(date) => {
-                                            if (date && date >= tomorrow) { // Enforce selection >= tomorrow
-                                                field.onChange(date);
-                                                updateUrlDebounced();
-                                            }
-                                        }}
-                                        month={month}
-                                        onMonthChange={setMonth}
-                                        disabled={(date) => date < tomorrow} // Disable dates before tomorrow
-                                        className="w-full"
-                                        classNames={{
-                                            day_selected: "bg-red-500 text-white hover:bg-red-600 focus:bg-red-600",
-                                            day_today: "bg-gray-100 text-gray-900",
-                                            day_disabled: "text-gray-400 cursor-not-allowed"
-                                        }}
-                                    />
-                                )}
-                            />
-                        </div>
+                      <Select
+                        value={field.value}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          updateUrlDebounced();
+                        }}
+                      >
+                        <SelectTrigger className="w-full text-center text-base sm:text-lg py-3 sm:py-4 border-gray-300 rounded-full touch-manipulation">
+                          <SelectValue placeholder="Select start time" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {timeOptions.map((time) => (
+                            <SelectItem key={time} value={time}>
+                              {time}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.startTime && (
+                        <FormMessage className="text-red-500 text-sm mt-1">
+                          {errors.startTime.message}
+                        </FormMessage>
+                      )}
                     </div>
-                );
-
-            case 2:
-                return (
+                  )}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-base sm:text-lg font-medium text-gray-900">End:</label>
+                <Controller
+                  name="endTime"
+                  control={control}
+                  render={({ field }) => (
                     <div>
-                        <div className="text-center mb-6 sm:mb-8 px-2">
-                            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">
-                                What time of day would you prefer for the date?
-                            </h1>
-                        </div>
-                        <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8 px-2 sm:px-0">
-                            <div className="space-y-2">
-                                <label className="text-base sm:text-lg font-medium text-gray-900">Start:</label>
-                                <Controller
-                                    name="startTime"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Input
-                                            {...field}
-                                            onChange={(e) => {
-                                                field.onChange(e);
-                                                updateUrlDebounced();
-                                            }}
-                                            className="text-center text-base sm:text-lg py-3 sm:py-4 border-gray-300 rounded-full touch-manipulation"
-                                        />
-                                    )}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-base sm:text-lg font-medium text-gray-900">End:</label>
-                                <Controller
-                                    name="endTime"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Input
-                                            {...field}
-                                            onChange={(e) => {
-                                                field.onChange(e);
-                                                updateUrlDebounced();
-                                            }}
-                                            className="text-center text-base sm:text-lg py-3 sm:py-4 border-gray-300 rounded-full touch-manipulation"
-                                        />
-                                    )}
-                                />
-                            </div>
-                        </div>
+                      <Select
+                        value={field.value}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          updateUrlDebounced();
+                        }}
+                      >
+                        <SelectTrigger className="w-full text-center text-base sm:text-lg py-3 sm:py-4 border-gray-300 rounded-full touch-manipulation">
+                          <SelectValue placeholder="Select end time" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {timeOptions.map((time) => (
+                            <SelectItem key={time} value={time}>
+                              {time}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.endTime && (
+                        <FormMessage className="text-red-500 text-sm mt-1">
+                          {errors.endTime.message}
+                        </FormMessage>
+                      )}
                     </div>
-                );
-
-            case 3:
-                const dateTypes = [
-                    ["Outdoor", "Indoor", "Adventure"],
-                    ["Cultural", "Relaxation"],
-                    ["Exhibitions", "Music", "Creative"],
-                    ["Entertainment", "Sports"],
-                    ["Nightlife", "Nature", "Shopping"]
-                ];
-                return (
-                    <div>
-                        <div className="text-center mb-6 sm:mb-8 px-2">
-                            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">
-                                What kind of date would you like to plan?
-                            </h1>
-                        </div>
-                        <div className="space-y-3 mb-6 sm:mb-8 px-2 sm:px-0">
-                            {dateTypes.map((row, rowIndex) => (
-                                <div key={rowIndex} className="flex gap-2 sm:gap-3 justify-center flex-wrap">
-                                    {row.map((type) => (
-                                        <Controller
-                                            key={type}
-                                            name="dateType"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Button
-                                                    onClick={() => {
-                                                        const newValue = toggleSelection(field.value, type);
-                                                        field.onChange(newValue);
-                                                        updateUrlDebounced();
-                                                    }}
-                                                    className={cn(
-                                                        "rounded-full px-4 sm:px-6 py-2 sm:py-2 text-sm font-medium transition-colors touch-manipulation min-h-[44px] sm:min-h-auto",
-                                                        // @ts-expect-error : type error
-                                                        field.value.includes(type) && []
-                                                            ? "bg-red-500 text-white hover:bg-red-600"
-                                                            : "bg-white border border-red-500 text-red-500 hover:bg-red-50"
-                                                    )}
-                                                >
-                                                    {type}
-                                                </Button>
-                                            )}
-                                        />
-                                    ))}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
-
-            case 4:
-                const foodTypes = [
-                    ["Chinese", "Japanese", "Korean"],
-                    ["Malaysian", "Taiwanese"],
-                    ["Thai", "Vietnamese", "Italian"],
-                    ["Spanish", "Peruvian"],
-                    ["Fastfood", "Indian", "Vegan"],
-                    ["Mexican", "Others"],
-                    ["Buffet", "Hotpot", "Vegan"]
-                ];
-                return (
-                    <div>
-                        <div className="text-center mb-6 sm:mb-8 px-2">
-                            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">
-                                I would like to eat...
-                            </h1>
-                            <p className="text-gray-600 mt-2 text-sm sm:text-base">(you can choose more than one)</p>
-                        </div>
-                        <div className="space-y-3 mb-6 sm:mb-8 px-2 sm:px-0">
-                            {foodTypes.map((row, rowIndex) => (
-                                <div key={rowIndex} className="flex gap-2 sm:gap-3 justify-center flex-wrap">
-                                    {row.map((food) => (
-                                        <Controller
-                                            key={food}
-                                            name="food"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Button
-                                                    onClick={() => {
-                                                        const newValue = toggleSelection(field.value??[], food);
-                                                        field.onChange(newValue);
-                                                        updateUrlDebounced();
-                                                    }}
-                                                    className={cn(
-                                                        "rounded-full px-4 sm:px-6 py-2 sm:py-2 text-sm font-medium transition-colors touch-manipulation min-h-[44px] sm:min-h-auto",
-                                                  // @ts-expect-error :  type error 
-                                                        (field.value ?? []).includes(food)
-                                                            ? "bg-red-500 text-white hover:bg-red-600"
-                                                            : "bg-white border border-red-500 text-red-500 hover:bg-red-50"
-                                                    )}
-                                                >
-                                                    {food}
-                                                </Button>
-                                            )}
-                                        />
-                                    ))}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
-
+                  )}
+                />
+              </div>
+            </div>
+          </div>
+        );
+ case 3:
+        const dateTypes = [
+          ["Outdoor", "Indoor", "Adventure"],
+          ["Cultural", "Relaxation"],
+          ["Exhibitions", "Music", "Creative"],
+          ["Entertainment", "Sports"],
+          ["Nightlife", "Nature", "Shopping"]
+        ];
+        return (
+          <div>
+            <div className="text-center mb-6 sm:mb-8 px-2">
+              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">
+                What kind of date would you like to plan?
+              </h1>
+              <p className="text-gray-600 mt-2 text-sm sm:text-base">(you can choose more than one)</p>
+            </div>
+            <div className="space-y-3 mb-6 sm:mb-8 px-2 sm:px-0">
+              {dateTypes.map((row, rowIndex) => (
+                <div key={rowIndex} className="flex gap-2 sm:gap-3 justify-center flex-wrap">
+                  {row.map((type) => (
+                    <Controller
+                      key={type}
+                      name="dateType"
+                      control={control}
+                      render={({ field }) => (
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            const newValue = toggleSelection(field.value || [], type);
+                            field.onChange(newValue);
+                            updateUrlDebounced();
+                            trigger("dateType"); // Trigger validation to update button state
+                          }}
+                          className={cn(
+                            "rounded-full px-4 sm:px-6 py-2 sm:py-2 text-sm font-medium transition-colors touch-manipulation min-h-[44px] sm:min-h-auto",
+                            field.value?.includes(type)
+                              ? "bg-red-500 text-white hover:bg-red-600"
+                              : "bg-white border border-red-500 text-red-500 hover:bg-red-50"
+                          )}
+                        >
+                          {type}
+                        </Button>
+                      )}
+                    />
+                  ))}
+                </div>
+              ))}
+              {errors.dateType && (
+                <FormMessage className="text-red-500 text-sm mt-2 text-center">
+                  {errors.dateType.message}
+                </FormMessage>
+              )}
+            </div>
+          </div>
+        );
+     case 4:
+        const foodTypes = [
+          ["Chinese", "Japanese", "Korean"],
+          ["Malaysian", "Taiwanese"],
+          ["Thai", "Vietnamese", "Italian"],
+          ["Spanish", "Peruvian"],
+          ["Fastfood", "Indian", "Vegan"],
+          ["Mexican", "Others"],
+          ["Buffet", "Hotpot"]
+        ];
+        return (
+          <div>
+            <div className="text-center mb-6 sm:mb-8 px-2">
+              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">
+                I would like to eat...
+              </h1>
+              <p className="text-gray-600 mt-2 text-sm sm:text-base">(you can choose more than one)</p>
+            </div>
+            <div className="space-y-3 mb-6 sm:mb-8 px-2 sm:px-0">
+              {foodTypes.map((row, rowIndex) => (
+                <div key={rowIndex} className="flex gap-2 sm:gap-3 justify-center flex-wrap">
+                  {row.map((food) => (
+                    <Controller
+                      key={food}
+                      name="food"
+                      control={control}
+                      render={({ field }) => (
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            const newValue = toggleSelection(field.value || [], food);
+                            field.onChange(newValue);
+                            updateUrlDebounced();
+                            trigger("food"); // Trigger validation to update button state
+                          }}
+                          className={cn(
+                            "rounded-full px-4 sm:px-6 py-2 sm:py-2 text-sm font-medium transition-colors touch-manipulation min-h-[44px] sm:min-h-auto",
+                            field.value?.includes(food)
+                              ? "bg-red-500 text-white hover:bg-red-600"
+                              : "bg-white border border-red-500 text-red-500 hover:bg-red-50"
+                          )}
+                        >
+                          {food}
+                        </Button>
+                      )}
+                    />
+                  ))}
+                </div>
+              ))}
+              {errors.food && (
+                <FormMessage className="text-red-500 text-sm mt-2 text-center">
+                  {errors.food.message}
+                </FormMessage>
+              )}
+            </div>
+          </div>
+        );
             case 5:
-                const transportOptions = ["Public Transportation", "Driving"];
-                return (
-                    <div>
-                        <div className="text-center mb-6 sm:mb-8 px-2">
-                            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">
-                                How would you like to get around?
-                            </h1>
-                        </div>
-                        <div className="space-y-4 mb-6 sm:mb-8 px-2 sm:px-0">
-                            {transportOptions.map((option) => (
-                                <Controller
-                                    key={option}
-                                    name="transportation"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Button
-                                            onClick={() => {
-                                                field.onChange(option);
-                                                updateUrlDebounced();
-                                            }}
-                                            variant="outline"
-                                            className={cn(
-                                                "w-full py-4 sm:py-6 text-base sm:text-lg rounded-full border-gray-300 touch-manipulation min-h-[56px] sm:min-h-auto",
-                                                field.value === option
-                                                    ? "border-red-500 text-red-500"
-                                                    : "text-gray-600"
-                                            )}
-                                        >
-                                            {option}
-                                        </Button>
-                                    )}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                );
+        const transportOptions = ["Public Transportation", "Driving"];
+        return (
+          <div>
+            <div className="text-center mb-6 sm:mb-8 px-2">
+              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">
+                How would you like to get around?
+              </h1>
+              <p className="text-gray-600 mt-2 text-sm sm:text-base">(please select one)</p>
+            </div>
+            <div className="space-y-4 mb-6 sm:mb-8 px-2 sm:px-0">
+              {transportOptions.map((option) => (
+                <Controller
+                  key={option}
+                  name="transportation"
+                  control={control}
+                  render={({ field }) => (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        field.onChange(option);
+                        updateUrlDebounced();
+                        trigger("transportation");
+                      }}
+                      variant="outline"
+                      className={cn(
+                        "w-full py-4 sm:py-6 text-base sm:text-lg rounded-full border-gray-300 touch-manipulation min-h-[56px] sm:min-h-auto",
+                        field.value === option
+                          ? "border-red-500 text-red-500"
+                          : "text-gray-600"
+                      )}
+                    >
+                      {option}
+                    </Button>
+                  )}
+                />
+              ))}
+              {errors.transportation && (
+                <FormMessage className="text-red-500 text-sm mt-2 text-center">
+                  {errors.transportation.message}
+                </FormMessage>
+              )}
+            </div>
+          </div>
+        );
 
-            case 6:
-                return (
-                    <div>
-                        <div className="text-center mb-6 sm:mb-8 px-2">
-                            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">
-                                What is your budget for the date? <span className="block sm:inline">(HKD per person)</span>
-                            </h1>
-                        </div>
-                        <div className="mb-6 sm:mb-8 px-4 sm:px-4">
-                            <div className="flex justify-between text-sm sm:text-base text-gray-600 mb-4 sm:mb-4">
-                                <span>$0</span>
-                                <span>$5000 or</span>
-                            </div>
-                            <Controller
-                                name="budget"
-                                control={control}
-                                render={({ field }) => {
-                                    // Ensure value is always an array and within valid range for budget
-                                    let safeValue;
-                                    if (Array.isArray(field.value)) {
-                                        // Ensure budget values are within 0-5000 range
-                                        safeValue = field.value.map(val => Math.max(0, Math.min(5000, val || 2500)));
-                                    } else {
-                                        const val = field.value || 2500;
-                                        safeValue = [Math.max(0, Math.min(5000, val))];
-                                    }
-
-                                    return (
-                                        <>
-                                            <Slider
-                                                value={safeValue}
-                                                onValueChange={(value) => {
-                                                    field.onChange(value);
-                                                    updateUrlDebounced();
-                                                }}
-                                                max={5000}
-                                                step={100}
-                                                className="w-full"
-                                            />
-                                            <div className="text-center mt-4 text-lg font-medium text-gray-900">
-                                                ${safeValue[0]}
-                                            </div>
-                                        </>
-                                    );
-                                }}
-                            />
-                        </div>
-                    </div>
-                );
+          case 6:
+        return (
+          <div>
+            <div className="text-center mb-6 sm:mb-8 px-2">
+              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">
+                What is your budget for the date? <span className="block sm:inline">(HKD per person)</span>
+              </h1>
+            </div>
+            <div className="mb-6 sm:mb-8 px-4 sm:px-4">
+              <div className="flex justify-between text-sm sm:text-base text-gray-600 mb-4 sm:mb-4">
+                <span>HKD $0</span>
+                <span>HKD $5000</span>
+              </div>
+              <Controller
+                name="budget"
+                control={control}
+                render={({ field }) => {
+                  let safeValue = Array.isArray(field.value)
+                    ? field.value.map(val => Math.max(0, Math.min(5000, val || 2500)))
+                    : [Math.max(0, Math.min(5000, field.value || 2500))];
+                  return (
+                    <>
+                      <Slider
+                        value={safeValue}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          updateUrlDebounced();
+                          trigger("budget");
+                        }}
+                        max={5000}
+                        step={100}
+                        className="w-full"
+                      />
+                      <div className="text-center mt-4 text-lg font-medium text-gray-900">
+                        HKD ${safeValue[0]}
+                      </div>
+                      {errors.budget && (
+                        <FormMessage className="text-red-500 text-sm mt-2">
+                          {errors.budget.message}
+                        </FormMessage>
+                      )}
+                    </>
+                  );
+                }}
+              />
+            </div>
+          </div>
+        );
 
             case 7:
                 return (
@@ -847,6 +834,7 @@ export default function QuestionnaireForm() {
                                     }
 
                                     return (
+                                        <>
                                         <Slider
                                             value={safeValue}
                                             onValueChange={(value) => {
@@ -857,6 +845,17 @@ export default function QuestionnaireForm() {
                                             step={1}
                                             className="w-full"
                                         />
+                                        <div className="text-center mt-4 text-lg font-medium text-gray-900">
+                                                {safeValue[0]}%
+                                                </div>
+                                        {
+                                        errors.intensity && (
+                                            <FormMessage className="text-red-500 text-sm mt-2">
+                                            {errors.intensity?.message}
+                                            </FormMessage>
+                                        )
+                                    }
+                                    </>
                                     );
                                 }}
                             />
@@ -864,47 +863,52 @@ export default function QuestionnaireForm() {
                     </div>
                 );
 
-            case 8:
-                const locations = ["Hong Kong Island", "Kowloon", "New Territories"];
-                return (
-                    <div>
-                        <div className="text-center mb-6 sm:mb-8 px-2">
-                            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">
-                                Do you have a preferred location for the date?
-                            </h1>
-                            <p className="text-gray-600 mt-2 text-sm sm:text-base">(you can choose more than one)</p>
-                        </div>
-                        <div className="space-y-4 mb-6 sm:mb-8 px-2 sm:px-0">
-                            {locations.map((location) => (
-                                <Controller
-                                    key={location}
-                                    name="location"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Button
-                                            onClick={() => {
-                                                const newValue = toggleSelection(field.value, location);
-                                                field.onChange(newValue);
-                                                updateUrlDebounced();
-                                            }}
-                                            variant="outline"
-                                            className={cn(
-                                                "w-full py-4 sm:py-6 text-base sm:text-lg rounded-full border-gray-300 touch-manipulation min-h-[56px] sm:min-h-auto",
-                                                    // @ts-expect-error :  type error 
-                                                field.value.includes(location)
-                                                    ? "border-red-500 text-red-500"
-                                                    : "text-gray-600"
-                                            )}
-                                        >
-                                            {location}
-                                        </Button>
-                                    )}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                );
-
+           case 8:
+        const locations = ["Hong Kong Island", "Kowloon", "New Territories"];
+        return (
+          <div>
+            <div className="text-center mb-6 sm:mb-8 px-2">
+              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">
+                Do you have a preferred location for the date?
+              </h1>
+              <p className="text-gray-600 mt-2 text-sm sm:text-base">(you can choose more than one)</p>
+            </div>
+            <div className="space-y-4 mb-6 sm:mb-8 px-2 sm:px-0">
+              {locations.map((location) => (
+                <Controller
+                  key={location}
+                  name="location"
+                  control={control}
+                  render={({ field }) => (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        const newValue = toggleSelection(field.value || [], location);
+                        field.onChange(newValue);
+                        updateUrlDebounced();
+                        trigger("location"); // Trigger validation to update button state
+                      }}
+                      variant="outline"
+                      className={cn(
+                        "w-full py-4 sm:py-6 text-base sm:text-lg rounded-full border-gray-300 touch-manipulation min-h-[56px] sm:min-h-auto",
+                        field.value?.includes(location)
+                          ? "border-red-500 text-red-500"
+                          : "text-gray-600"
+                      )}
+                    >
+                      {location}
+                    </Button>
+                  )}
+                />
+              ))}
+              {errors.location && (
+                <FormMessage className="text-red-500 text-sm mt-2 text-center">
+                  {errors.location.message}
+                </FormMessage>
+              )}
+            </div>
+          </div>
+        );
             default:
                 return null;
         }
