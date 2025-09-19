@@ -15,8 +15,8 @@ interface NavItem {
 
 
 const navItems: NavItem[] = [
-    { icon: Search, label: "Explore", route: "/login" },
-    { icon: Heart, label: "Wishlist", route: "/login" },
+    { icon: Search, label: "Explore", route: "/commingsoon" },
+    { icon: Heart, label: "Wishlist", route: "/commingsoon" },
     { icon: Plus, label: "", route: "/demo", isCenter: true },
     { icon: Calendar, label: "Schedule", route: "/schedule" },
     { icon: Settings, label: "Setting", route: "/itineraries" }
