@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 
 import { useState, useEffect } from "react";
 import { callPerplexityAPI } from "../../server/ai";
@@ -108,7 +109,7 @@ export default function ItineraryPage() {
           itineraryData.map((item, index) => (
             <div key={item.id}>
               <div className="bg-white rounded-xl shadow-md p-4 flex items-center space-x-4">
-                <img src={item.image} alt={item.title} className="w-20 h-20 rounded-full object-cover" />
+                <Image src={item.image} alt={item.title} className="w-20 h-20 rounded-full object-cover" />
                 <div className="flex-1">
                   <div className="flex justify-between items-start">
                     <div>
@@ -158,7 +159,7 @@ export default function ItineraryPage() {
           sampleData.map((item, index) => (
             <div key={item.id}>
               <div className="bg-white rounded-xl shadow-md p-4 flex items-center space-x-4">
-                <img src={item.image} alt={item.title} className="w-20 h-20 rounded-full object-cover" />
+                <Image src={item.image} alt={item.title} className="w-20 h-20 rounded-full object-cover" />
                 <div className="flex-1">
                   <div className="flex justify-between items-start">
                     <div>
