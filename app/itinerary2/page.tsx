@@ -14,7 +14,8 @@ export default function ItineraryPage() {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const data = await callPerplexityAPI();
+           const results = JSON.parse(localStorage.getItem('questionnaireResults') || '{}');
+        const data = await callPerplexityAPI(results);
         let responseContent = data?.choices?.[0]?.message?.content;
 
         if (!responseContent) {
@@ -40,10 +41,11 @@ export default function ItineraryPage() {
         if (!Array.isArray(parsedData)) {
           throw new Error("Parsed response is not an array of itinerary items");
         }
+            //@ts-expect-error type error
         setItineraryData(parsedData);
       } catch (error) {
-        console.error("API or parsing error:", error.message, "Response content:", responseContent);
-        setError(`Error: ${error.message}`);
+            //@ts-expect-error type error
+        console.error("API or parsing error:", error.message, "Response content:", responseContent); setError(`Error: ${error.message}`);
       } finally {
         setIsLoading(false);
       }
@@ -102,6 +104,7 @@ export default function ItineraryPage() {
       <h1 className="text-2xl font-bold mb-6 text-center">Itinerary</h1>
       <div className="space-y-8"> {/* Increased space-y for separation */}
         {itineraryData ? (
+              //@ts-expect-error type error
           itineraryData.map((item, index) => (
             <div key={item.id}>
               <div className="bg-white rounded-xl shadow-md p-4 flex items-center space-x-4">

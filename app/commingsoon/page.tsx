@@ -3,15 +3,16 @@ import { Hourglass } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BottomNavigation from "@/components/bottomnav";
 
-interface ComingSoonProps {
+interface Props {
   feature?: string;
 }
 
-const ComingSoon: React.FC<ComingSoonProps> = ({ feature }) => {
-  const title = feature ? `${feature} Coming Soon` : "Coming Soon";
-  const description = feature
-    ? `We're building the ${feature.toLowerCase()} experience. Check back soon!`
-    : "We're building this experience. Check back soon!";
+
+import React from 'react'
+
+export default function CommingSoon() {
+
+
 
   return (
     <div className="min-h-screen bg-background max-w-md mx-auto relative flex flex-col">
@@ -20,8 +21,8 @@ const ComingSoon: React.FC<ComingSoonProps> = ({ feature }) => {
           <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
             <Hourglass className="w-7 h-7 text-muted-foreground" />
           </div>
-          <h1 className="text-2xl font-semibold text-foreground mb-2">{title}</h1>
-          <p className="text-muted-foreground mb-6">{description}</p>
+          <h1 className="text-2xl font-semibold text-foreground mb-2">Coming Soon</h1>
+          <p className="text-muted-foreground mb-6">We are building this experience. Check back soon!</p>
           <div className="flex items-center justify-center gap-3">
             <Button asChild>
               <Link href="/">Back to Home</Link>
@@ -33,5 +34,3 @@ const ComingSoon: React.FC<ComingSoonProps> = ({ feature }) => {
     </div>
   );
 };
-
-export default ComingSoon;
