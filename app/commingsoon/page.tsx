@@ -7,7 +7,7 @@ interface Props {
   feature?: string;
 }
 
-export default function ComingSoon({ feature }: Props) {
+const ComingSoon: React.FC<Props> = ({ feature }) => {
   const title = feature ? `${feature} Coming Soon` : "Coming Soon";
   const description = feature
     ? `We're building the ${feature.toLowerCase()} experience. Check back soon!`
@@ -21,9 +21,7 @@ export default function ComingSoon({ feature }: Props) {
             <Hourglass className="w-7 h-7 text-muted-foreground" />
           </div>
           <h1 className="text-2xl font-semibold text-foreground mb-2">{title}</h1>
-          <p className="text-muted-foreground mb-6">
-            {description}
-          </p>
+          <p className="text-muted-foreground mb-6">{description}</p>
           <div className="flex items-center justify-center gap-3">
             <Button asChild>
               <Link href="/">Back to Home</Link>
@@ -31,8 +29,9 @@ export default function ComingSoon({ feature }: Props) {
           </div>
         </div>
       </div>
-
       <BottomNavigation />
     </div>
   );
-}
+};
+
+export default ComingSoon;
