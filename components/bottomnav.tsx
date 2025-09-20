@@ -15,11 +15,11 @@ interface NavItem {
 
 
 const navItems: NavItem[] = [
-    { icon: Search, label: "Explore", route: "/commingsoon" },
+    { icon: Search, label: "Explore", route: "/post" },
     { icon: Heart, label: "Wishlist", route: "/commingsoon" },
     { icon: Plus, label: "", route: "/demo", isCenter: true },
     { icon: Calendar, label: "Schedule", route: "/schedule" },
-    { icon: Settings, label: "Setting", route: "/itineraries" }
+    { icon: Settings, label: "Setting", route: "/itinerary2" }
 ];
 
 export default function BottomNavigation() {

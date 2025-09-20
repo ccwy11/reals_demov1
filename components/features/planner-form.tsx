@@ -355,7 +355,7 @@ export default function QuestionnaireForm() {
             updateUrl(nextStep);
         } else {
             // Generate and download JSON file when questionnaire is completed
-            generateJsonFile();
+            // generateJsonFile();
           
             router.push("/perplex");
         }

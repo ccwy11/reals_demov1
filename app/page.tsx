@@ -1,329 +1,126 @@
-
-import * as input from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { ArrowUpDown, Star, Search, Heart, Plus, Settings, Calendar } from 'lucide-react';
-import Link from "next/link";
+import { Search, SlidersHorizontal, Heart, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import BottomNavigation from "@/components/bottomnav";
 import Image from "next/image";
-import BottomNav from "@/components/bottomnav"
+import Link from "next/link";
 
 const categories = [
-  { icon: "🔥", label: "Popular" },
-  { icon: "🎨", label: "Arts & Culture" },
-  { icon: "⚡", label: "Active" },
-  { icon: "🧘", label: "Relax" },
-  { icon: "🍽️", label: "Food" },
-  { icon: "🍻", label: "Bars" },
-  { icon: "📅", label: "Events" },
-  { icon: "📱", label: "See all" }
+  { id: 1, title: "teamLab Future Park", image: "https://images.pexels.com/photos/1793037/pexels-photo-1793037.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" },
+  { id: 2, title: "S20 Hong Kong Songkran Music Festival", image: "https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1?w=600&h=400&fit=crop" },
+  { id: 3, title: "West Kowloon Park", image: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=600&h=400&fit=crop" }
 ];
 
-const reelsFeed = [
-  {
-    id: 1,
-    user: {
-      name: "Pumkinpie",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face"
-    },
-    title: "Sunset Stroll at Ha Pak Nai‼️",
-    description: "Chasing Sunsets with My Love at Ha Pak Nai 🌅💖",
-    image: "https://images.unsplash.com/photo-1566869296634-0621a207b7e0?w=700&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxjb2xsZWN0aW9uLXBhZ2V8MXw1MTExOTJ8fGVufDB8fHx8fA%3D%3D",
-    likes: 20,
-    type: "single"
-  },
-  {
-    id: 2,
-    user: {
-      name: "Espresso",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face"
-    },
-    title: "Star Ferry Romance",
-    description: "Sailing Across Victoria Harbour with Bae 🚤✨",
-    image: "https://images.unsplash.com/photo-1575646942673-dec5dacb77b6?w=700&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZmVycnklMjBuaWdodHxlbnwwfHwwfHx8MA%3D%3D",
-    likes: 5,
-    type: "single"
-  },
-  {
-    id: 3,
-    user: {
-      name: "sunflower",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face"
-    },
-    title: "Hongkong Hidden Gems - Local Recommendations",
-    description: "Picnic Date Goals at Inspiration Lake 🧺💑",
-    images: [
-      "https://images.unsplash.com/photo-1574920443828-8c5d8b75f327?w=200&h=150&fit=crop",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=150&fit=crop",
-      "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=200&h=150&fit=crop",
-      "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=200&h=150&fit=crop",
-      "https://images.unsplash.com/photo-1504893524553-b855bce32c67?w=200&h=150&fit=crop",
-      "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=200&h=150&fit=crop"
-    ],
-    likes: 623,
-    type: "grid"
-  },
-  {
-    id: 4,
-    user: {
-      name: "Almondmilk",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face"
-    },
-    title: "Hongkong's New! Super Large Indoor Playground - Perfect for Holidays!",
-    description: "Indoor Sports must do",
-    image: "https://images.unsplash.com/photo-1593104126192-a09fe7123329?w=700&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8aW5kb29yJTIwd2F0ZXJ8ZW58MHx8MHx8fDA%3D",
-    likes: 165,
-    type: "single"
-  }
-];
+const featured = {
+  title: "Tung Hing Glass & Pottery",
+  match: "89%",
+  image: "https://images.pexels.com/photos/3981749/pexels-photo-3981749.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+};
 
-const featuredReals = [
-  {
-    id: 1,
-    title: "Pottery",
-    match: "89%",
-    image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop&crop=center",
-    action: "Book"
-  },
-  {
-    id: 2,
-    title: "Archery",
-    match: "70%",
-    image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&h=300&fit=crop&crop=center",
-    action: "Book"
-  }
+const trending = [
+  { id: 1, title: "Archery Tag at Lai Chi Kok", match: "70%", image: "https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=800&h=500&fit=crop" },
+  { id: 2, title: "Cocktail Masterclass at Penicillin", match: "82%", image: "https://images.pexels.com/photos/8129909/pexels-photo-8129909.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" }
 ];
-
-const trendingReals = [
-  // {
-  //   id: 1,
-  //   title: "Pottery",
-  //   match: "89%",
-  //   image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop&crop=center",
-  //   action: "Book"
-  // },
-  // {
-  //   id: 2,
-  //   title: "Archery",
-  //   match: "70%",
-  //   image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&h=300&fit=crop&crop=center",
-  //   action: "Book"
-  // },
-  // {
-  //   id: 3,
-  //   title: "Archery",
-  //   match: "70%",
-  //   image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&h=300&fit=crop&crop=center",
-  //   action: "Book"
-  // },
-  // {
-  //   id: 4,
-  //   title: "Archery",
-  //   match: "70%",
-  //   image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&h=300&fit=crop&crop=center",
-  //   action: "Book"
-  // }
-];
-
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-background max-w-md mx-auto relative">
       {/* Header */}
-      <div className="sticky top-0 bg-background/95 backdrop-blur-sm z-10">
+      <div className="sticky top-0 bg-background/95 backdrop-blur-sm z-20">
         <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
-              <span className="text-white text-sm font-bold">R</span>
-            </div>
-            <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm">👤</span>
-            </div>
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 bg-foreground rounded-full flex items-center justify-center text-sm font-bold text-background">R</div>
+            <div className="w-9 h-9 bg-muted rounded-full flex items-center justify-center">👤</div>
           </div>
 
-          <h1 className="text-xl font-bold text-foreground">Reals</h1>
+          <h1 className="text-2xl font-extrabold text-foreground">Reals</h1>
 
-          <div className="w-8 h-8 flex items-center justify-center">
-            <span className="text-lg">🛒</span>
-          </div>
+          <div className="w-9 h-9 flex items-center justify-center">🛒</div>
         </div>
 
-        {/* Search Bar */}
-        <div className="px-4 pb-4">
+        <div className="px-4 pb-3">
           <div className="relative">
-            <input.Input className="w-full pl-10 pr-4 py-2 bg-muted rounded-lg border-none outline-none focus:ring-2 focus:ring-ring" type="text"
-              placeholder="Search" />
-
-          </div>
-        </div>
-
-        {/* Sort Button */}
-        {/* <div className="px-4 pb-3">
-          <div className="flex justify-end">
-            <Button variant="ghost" size="sm" className="w-2/12 text-muted-foreground">
-              Sort <ArrowUpDown className="ml-1 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Search"
+              className="w-full pl-10 pr-4 py-2 bg-muted rounded-full border-none outline-none focus:ring-2 focus:ring-ring"
+            />
+            <Button variant="ghost" size="sm" className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground">
+              <SlidersHorizontal className="w-4 h-4" />
             </Button>
           </div>
-        </div> */}
-
-        {/* Main Content */}
-        {/* <div className="px-4 pb-24"> */}
-        {/* Categories */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
-          {categories.map((category, index) => (
-            <div key={index} className="flex flex-col items-center">
-              <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-2">
-                <span className="text-xl">{category.icon}</span>
-              </div>
-              <span className="text-xs text-center text-foreground font-medium">
-                {category.label}
-              </span>
-            </div>
-          ))}
-          {/* </div> */}
         </div>
+      </div>
 
-        {/* Featured Reals */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-foreground">Featured Reals</h2>
-            <Button variant="ghost" size="sm" className="text-muted-foreground">
-              View all
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            {featuredReals.map((real) => (
-              <Link href="/activity"
-                key={real.id}
-                // to="/activity"
-                className="relative bg-card rounded-lg overflow-hidden shadow-sm block"
-              >
-                <div className="relative ">
+      <div className="px-4 pb-28">
+        {/* Popular horizontal scroller */}
+        <section className="mb-6">
+          <h2 className="text-lg font-semibold mb-3">Popular Arts & Culture</h2>
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {categories.map((c) => (
+              <Link key={c.id} href="/activity" className="min-w-[220px] rounded-lg overflow-hidden bg-card shadow-sm">
+                <div className="relative h-36 w-full">
                   <Image
-                    src={real.image}
-                    alt={real.title}
-                    width={400}
-                    height={300}
-                    className="w-full h-32 object-cover"
-                  />
-                  <button className="absolute top-2 right-2 w-6 h-6 bg-black/20 rounded-full flex items-center justify-center">
-                    <Star className="w-3 h-3 text-white fill-white" />
-                  </button>
-                  <div className="absolute bottom-2 left-2 bg-black/60 rounded px-2 py-1">
-                    <span className="text-white text-xs">Match {real.match}</span>
-                  </div>
-                </div>
-                <div className="p-3">
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-medium text-foreground">{real.title}</h3>
-                    <Button size="sm" className="bg-primary text-primary-foreground ">
-                      {real.action}
-                    </Button>
-                  </div>
+                    width={600}
+                    height={400}
+                    src={c.image} alt={c.title} className="w-full h-full object-cover" />
+                  <div className="absolute left-3 bottom-3 text-white font-semibold text-sm drop-shadow">{c.title}</div>
                 </div>
               </Link>
             ))}
           </div>
-        </div>
+        </section>
 
-        {/* Trending Reals */}
-
-        {/* <h2 className="text-lg font-semibold text-foreground mb-4">Trending Reals</h2>
-
-        <div className="grid grid-cols-2 gap-4">
-          {trendingReals.map((real) => (
-            <div key={real.id} className="relative bg-card rounded-lg overflow-hidden shadow-sm">
-              <div className="relative">
-                <Image
-                  src={real.image}
-                  alt={real.title}
-                  width={400}
-                  height={300}
-                  className="w-full h-32 object-cover"
-                />
-                <button className="absolute top-2 right-2 w-6 h-6 bg-black/20 rounded-full flex items-center justify-center">
-                  <Star className="w-3 h-3 text-white fill-white" />
-                </button>
-                <div className="absolute bottom-2 left-2 bg-black/60 rounded px-2 py-1">
-                  <span className="text-white text-xs">Match {real.match}</span>
-                </div>
-              </div>
-              <div className="p-3">
-                <h3 className="font-medium text-foreground">{real.title}</h3>
-              </div>
-            </div>
-          ))}
-        </div> */}
-        {/* Reels Feed */}
-        <Link href={"/post"}>
-          <div>
-            <h2 className="text-lg font-semibold text-foreground mb-4">🤙Recommeded Reels</h2>
-            <div className="grid grid-cols-2 gap-4">
-              {reelsFeed.map((reel) => (
-                <div key={reel.id} className="bg-card rounded-lg overflow-hidden">
-                  {/* User Header */}
-                  <div className="flex items-center gap-3 p-4 pb-2">
-                    <Image
-                      width={400}
-                      height={300}
-                      src={reel.user.avatar}
-                      alt={reel.user.name}
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                    <span className="text-sm font-medium text-foreground">{reel.user.name}</span>
-                  </div>
-
-                  {/* Content */}
-                  <div className="px-4 pb-2">
-                    <h3 className="text-sm font-medium text-foreground mb-2 leading-tight">
-                      {reel.title}
-                    </h3>
-                  </div>
-
-                  {/* Images */}
-                  {reel.type === "single" ? (
-                    <div className="px-4">
-                      <Image
-                       
-                        width={400}
-                        height={300}
-                         src={reel.image!}
-                        alt={reel.title}
-                        className="w-full h-48 object-cover rounded-lg"
-                      />
-                    </div>
-                  ) : (
-                    <div className="px-4">
-                      <div className="grid grid-cols-3 gap-1">
-                        {reel.images?.slice(0, 6).map((img, index) => (
-                          <Image
-                            width={400}
-                            height={300}
-                            key={index}
-                            src={img}
-                            alt=""
-                            className="w-full h-20 object-cover rounded"
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Like Count */}
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <Heart className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">{reel.likes}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* Featured */}
+        <section className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold">Featured Reals</h3>
+            <Link href="/" className="text-sm text-destructive">See all</Link>
           </div>
-        </Link>
+
+          <Link href="/post2" className="block rounded-xl overflow-hidden bg-card shadow-md">
+            <div className="relative h-44">
+              <Image
+                width={1200}
+                    height={700}
+                src={featured.image} alt={featured.title} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute left-4 bottom-4 text-white">
+                <h4 className="text-xl font-bold">{featured.title}</h4>
+                <div className="text-sm">Match {featured.match}</div>
+              </div>
+              <div className="absolute right-3 top-3 w-8 h-8 bg-black/25 rounded-full flex items-center justify-center">
+                <Star className="w-4 h-4 text-white" />
+              </div>
+            </div>
+          </Link>
+        </section>
+
+        {/* Trending */}
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold">Trending Reals</h3>
+            <Link href="/" className="text-sm text-destructive">See all</Link>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {trending.map((t) => (
+              <Link key={t.id} href="/post" className="rounded-lg overflow-hidden bg-card shadow-sm block">
+                <div className="relative h-28">
+                  <Image src={t.image} alt={t.title}
+                    width={800}
+                    height={500}
+                    className="w-full h-full object-cover" />
+                  <div className="absolute left-3 bottom-3 text-white font-semibold text-sm drop-shadow">{t.title}</div>
+                  <div className="absolute left-3 top-3 bg-black/50 px-2 py-1 rounded text-xs text-white">Match {t.match}</div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
       </div>
 
-      <BottomNav />
-      {/* </div> */}
-    </div >
-  )
+      <BottomNavigation />
+    </div>
+  );
 }
