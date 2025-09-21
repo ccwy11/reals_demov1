@@ -16,7 +16,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
     { icon: Search, label: "Explore", route: "/post" },
-    { icon: Heart, label: "Wishlist", route: "/commingsoon" },
+    { icon: Heart, label: "Wishlist", route: "/comingsoon" },
     { icon: Plus, label: "", route: "/demo", isCenter: true },
     { icon: Calendar, label: "Schedule", route: "/schedule" },
     { icon: Settings, label: "Setting", route: "/itinerary2" }
@@ -24,43 +24,38 @@ const navItems: NavItem[] = [
 
 export default function BottomNavigation() {
     const pathname = usePathname();
+return (
+    <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border max-w-md mx-auto z-40">
+      <div className="grid grid-cols-5 py-2">
+        {navItems.map((item, index) => {
+          const isActive = pathname === item.route;
+          const IconComponent = item.icon;
 
-    return (
-        <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border max-w-md mx-auto z-40">
-            <div className="grid grid-cols-5 py-2">
-                {navItems.map((item, index) => {
-                    const isActive = pathname === item.route;
-                    const IconComponent = item.icon;
-
-                    return (
-                        <Link
-                            key={index}
-                            href={item.route}
-                            className={`flex flex-col items-center justify-center py-2 ${item.isCenter ? "mx-4" : ""
-                                }`}
-                        >
-                            {item.isCenter ? (
-                                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                                    <IconComponent className="w-6 h-6 text-white" />
-                                </div>
-                            ) : (
-                                <>
-                                    <IconComponent
-                                        className={`w-5 h-5 mb-1 ${isActive ? "text-foreground" : "text-muted-foreground"
-                                            }`}
-                                    />
-                                    <span
-                                        className={`text-xs ${isActive ? "text-foreground" : "text-muted-foreground"
-                                            }`}
-                                    >
-                                        {item.label}
-                                    </span>
-                                </>
-                            )}
-                        </Link>
-                    );
-                })}
-            </div>
-        </div>
-    );
+          return (
+            <Link
+              key={index}
+              href={item.route}
+              className={`flex flex-col items-center justify-center py-2 ${item.isCenter ? 'mx-4' : ''}`}
+              onError={() => console.error(`Failed to navigate to ${item.route}`)}
+            >
+              {item.isCenter ? (
+                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+                  <IconComponent className="w-6 h-6 text-white" />
+                </div>
+              ) : (
+                <>
+                  <IconComponent
+                    className={`w-5 h-5 mb-1 ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}
+                  />
+                  <span className={`text-xs ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
+                    {item.label}
+                  </span>
+                </>
+              )}
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
 }

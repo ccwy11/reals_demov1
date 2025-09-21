@@ -10,7 +10,7 @@ interface Props {
 
 import React from 'react'
 
-export default function CommingSoon() {
+export default function ComingSoon() {
 
 
 

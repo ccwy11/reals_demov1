@@ -4,46 +4,46 @@ import { QuestionnaireStateSchema } from "../components/features/planner-form"
 import { db } from "@/db/drizzle";
 
 
-const JsonOutputSchema = z.object({
-    metadata: z.object({
-        completedAt: z.string().datetime(),
-        totalSteps: z.number(),
-        version: z.string(),
-        validation: z.object({
-            isValid: z.boolean(),
-            schema: z.string()
-        })
-    }),
-    responses: z.object({
-        step1_date: z.string().nullable(),
-        step2_time: z.object({
-            startTime: z.string(),
-            endTime: z.string()
-        }),
-        step3_date_type: z.array(z.string()),
-        step4_food: z.array(z.string()),
-        step5_transportation: z.string(),
-        step6_budget: z.string().regex(/^HKD \$\d{1,4}$/, "Budget must be in the format 'HKD $number' between HKD $0 and HKD $5000"),
-        step7_intensity: z.string().regex(/^\d{1,3}%$/, "Intensity must be a percentage between 0% and 100%"),
-        step8_location: z.array(z.string())
-    })
-});
+// const JsonOutputSchema = z.object({
+//     metadata: z.object({
+//         completedAt: z.string().datetime(),
+//         totalSteps: z.number(),
+//         version: z.string(),
+//         validation: z.object({
+//             isValid: z.boolean(),
+//             schema: z.string()
+//         })
+//     }),
+//     responses: z.object({
+//         step1_date: z.string().nullable(),
+//         step2_time: z.object({
+//             startTime: z.string(),
+//             endTime: z.string()
+//         }),
+//         step3_date_type: z.array(z.string()),
+//         step4_food: z.array(z.string()),
+//         step5_transportation: z.string(),
+//         step6_budget: z.string().regex(/^HKD \$\d{1,4}$/, "Budget must be in the format 'HKD $number' between HKD $0 and HKD $5000"),
+//         step7_intensity: z.string().regex(/^\d{1,3}%$/, "Intensity must be a percentage between 0% and 100%"),
+//         step8_location: z.array(z.string())
+//     })
+// });
 
-type QuestionnaireResults = z.infer<typeof JsonOutputSchema>;
+type QuestionnaireResults = z.infer<typeof QuestionnaireStateSchema>;
 
 export async function callPerplexityAPI(results: QuestionnaireResults) {
     const  prompt = `
     
  Generate a full day itinerary for a single day in HongKong for a traveler interested in art, culture, and food.
+     ${JSON.stringify(results, null, 2)}
   Include 4-5 activities covering morning, afternoon, and evening. Each activity should be a JSON object with the following fields:
    'id' (unique integer starting from 1), 'type' (e.g., 'exhibition', 'meal', 'tour', 'event'), 'title' (descriptive name),
    'time' (format: 'HH:MM AM/PM - HH:MM AM/PM'), 
-   'image' (placeholder URL from unsplash.com),
+   'image' (placeholder URL from pexels.com) , no 404 response from image, food or activity image,
    'travel' (with 30 text character to describe transportation)
    and 'hasChange' (set to true).
    Ensure activities are logically sequenced, feasible in timing and location, and align with the interests. Return as a JSON array.
     in json formatt
-    ${JSON.stringify(results, null, 2)}
     `
     // if (!process.env.PERPLEXITY_API_KEY) throw new Error("Missing API key");
     const res = await fetch("https://api.perplexity.ai/chat/completions", {
@@ -79,77 +79,6 @@ export async function callPerplexityAPI(results: QuestionnaireResults) {
 }
 
 
-
-// export async function generatePlan() {
-    // export async function generatePlan(formData: z.infer<typeof QuestionnaireStateSchema>) {
-    //     const { date, dateType, startTime, endTime, budget, intensity, location } = formData
-
-
-    //     //  to ${endDate.toISOString()} 
-    //     let prompt = `
-    //     I want to plan a date  
-    //     from ${date?.toISOString()} 
-
-    //     with a budget of ${budget} HKD. I want to do ${dateType.join(', ')}.
-    //     Please format the result in html
-
-
-    //     `;
-    //     if (location) {
-    //         prompt += `I want to visit ${location}.`
-    //     }
-
-
-    //     // Set up the API endpoint and headers
-    // const url = 'https://api.perplexity.ai/chat/completions';
-    // const headers = {
-    //  
-    //  'Authorization': `${process.env.PERPLEXITY_API_KEY}`, // Replace with your actual API key
-    //     'Content-Type': 'application/json'
-    // };
-
-    // // Define the request payload
-    // const payload = {
-    //     model: 'sonar-pro',
-    //     messages: [
-    //         { role: 'user', content: 'What were the results of the 2025 French Open Finals?' }
-    //     ]
-    // };
-    // Make the API call
-    // const response = await fetch(url, {
-    //     method: 'POST',
-    //     headers,
-    //     body: JSON.stringify(payload)
-    // });
-
-
-    // const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //         'Authorization': `BEARER ${process.env.OPENAI_API_KEY}`,
-    //     },
-    //     body: JSON.stringify({
-    //         messages: [{
-    //             role: "user",
-    //             content: "hello"
-    //             //prompt,
-    //         }],
-    //         model: "gpt-4o-mini"
-    //     }),
-    // });
-
-
-
-
-
-//     const data = await response.json();
-
-//     // Print the AI's response
-//     console.log(data.choices[0].message.content)
-//     console.log(data); // replace with console.log(data.choices[0].message.content) for just the content
-
-// } 
 
 // 1. Date
 // - 27/08/2025

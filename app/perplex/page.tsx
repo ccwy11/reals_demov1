@@ -5,6 +5,7 @@ import { callPerplexityAPI } from "../../server/ai";
 import Link from "next/link";
 import BottomNavigation from "@/components/bottomnav";
 import ItineraryDisplay from "@/components/ItineraryDisplay";
+import { Button } from "@/components/ui/button";
 
 export default function Perplex() {
   const [itineraryData, setItineraryData] = useState(null);
@@ -55,47 +56,32 @@ export default function Perplex() {
   };
 
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "20px", textAlign: "center" }}>
-      <h1 style={{ fontSize: "24px", marginBottom: "20px", color: "#333" }}>Perplexity API Test</h1>
-      <button
+   <div className="flex flex-col min-h-screen bg-background max-w-md mx-auto px-5 pb-20">
+   <h1 className="text-2xl font-bold text-foreground text-center mb-5">Perplexity API Test</h1>
+        <Button
         onClick={testAPI}
         disabled={isLoading}
-        style={{
-          padding: "10px 20px",
-          fontSize: "16px",
-          backgroundColor: isLoading ? "#ccc" : "#007bff",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: isLoading ? "not-allowed" : "pointer",
-        }}
+        className={`px-5 py-2.5 text-base font-medium text-white rounded-md ${
+          isLoading ? 'bg-muted cursor-not-allowed' : 'bg-primary hover:bg-primary/90'
+        } transition-colors`}
       >
         {isLoading ? "Loading..." : "Get Answer"}
-      </button>
-      <div style={{
-        marginTop: '20px',
-        fontSize: '18px',
-        color: '#333',
-        fontWeight: 'normal',
-        border: '1px solid #ccc',
-        borderRadius: '8px',
-        padding: '15px',
-        backgroundColor: '#f9f9f9',
-        width: '100%',
-        maxWidth: '600px',
-        boxSizing: 'border-box',
-        wordWrap: 'break-word',
-      }}>
-        {error ? (
-          <span style={{ color: "#666" }}>{error}</span>
+      </Button>
+     <div
+        className="mt-5 p-4 border border-border rounded-lg bg-muted/50 text-foreground text-lg w-full box-border break-words"
+      >
+  {error ? (
+          <span className="text-muted-foreground">{error}</span>
         ) : itineraryData ? (
           <ItineraryDisplay itineraryData={itineraryData} />
         ) : (
-          <span style={{ color: "#666" }}>Click the button to get an answer.</span>
+    <span className="text-muted-foreground">Click the button to get an answer.</span>
         )}
       </div>
-      <Link href="/itineraries">
-        <button className="bg-pink-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Book Above</button>
+      <Link href="/activity" className="mt-5">
+        <Button className="w-full px-4 py-2 text-white font-bold bg-primary hover:bg-primary/90 rounded-md transition-colors">
+          Book Above
+        </Button>
       </Link>
       <BottomNavigation />
     </div>

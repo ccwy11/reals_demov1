@@ -18,7 +18,9 @@ const featured = {
 
 const trending = [
   { id: 1, title: "Archery Tag at Lai Chi Kok", match: "70%", image: "https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=800&h=500&fit=crop" },
-  { id: 2, title: "Cocktail Masterclass at Penicillin", match: "82%", image: "https://images.pexels.com/photos/8129909/pexels-photo-8129909.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" }
+  { id: 2, title: "Cocktail Masterclass at Penicillin", match: "82%", image: "https://images.pexels.com/photos/8129909/pexels-photo-8129909.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" },
+   { id: 3, title: "Archery Tag at Lai Chi Kok", match: "70%", image: "https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=800&h=500&fit=crop" },
+     { id: 4, title: "Archery Tag at Lai Chi Kok", match: "70%", image: "https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=800&h=500&fit=crop" },
 ];
 
 export default function Home() {

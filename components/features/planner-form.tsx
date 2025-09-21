@@ -361,86 +361,7 @@ export default function QuestionnaireForm() {
         }
     };
 
-    const generateJsonFile = () => {
-        try {
-            // Validate current form values before generating JSON
-            const currentValues = getValues();
-            const validatedAnswers = QuestionnaireStateSchema.parse(currentValues);
 
-            // Define JSON output schema
-            const JsonOutputSchema = z.object({
-                metadata: z.object({
-                    completedAt: z.string().datetime(),
-                    totalSteps: z.number(),
-                    version: z.string(),
-                    validation: z.object({
-                        isValid: z.boolean(),
-                        schema: z.string()
-                    })
-                }),
-                responses: z.object({
-                    step1_date: z.string().nullable(),
-                    step2_time: z.object({
-                        startTime: z.string(),
-                        endTime: z.string()
-                    }),
-                    step3_date_type: z.array(z.string()),
-                    step4_food: z.array(z.string()),
-                    step5_transportation: z.string(),
-                    step6_budget: z.string().regex(/^HKD \$\d{1,4}$/, "Budget must be in the format 'HKD $number' between HKD $0 and HKD $5000"),
-                    step7_intensity: z.string().regex(/^\d{1,3}%$/, "Intensity must be a percentage between 0% and 100%"),
-                    step8_location: z.array(z.string())
-                })
-            });
-
-            const questionnaireResults = {
-                metadata: {
-                    completedAt: new Date().toISOString(),
-                    totalSteps: totalSteps,
-                    version: "1.0",
-                    validation: {
-                        isValid: true,
-                        schema: "QuestionnaireStateSchema"
-                    }
-                },
-                responses: {
-                    step1_date: validatedAnswers.date ? validatedAnswers.date.toISOString().split("T")[0] : null,
-                    step2_time: {
-                        startTime: validatedAnswers.startTime,
-                        endTime: validatedAnswers.endTime
-                    },
-                    step3_date_type: validatedAnswers.dateType,
-                    step4_food: validatedAnswers.food,
-                    step5_transportation: validatedAnswers.transportation,
-                    step6_budget: `HKD $${validatedAnswers.budget[0]}`,
-                    step7_intensity: `${validatedAnswers.intensity[0]}%`,
-                    step8_location: validatedAnswers.location
-                }
-                
-            };
-
-            // Validate the final JSON structure
-            const validatedJson = JsonOutputSchema.parse(questionnaireResults);
-
-            // Create and download JSON file
-            const jsonString = JSON.stringify(validatedJson, null, 2);
-            const blob = new Blob([jsonString], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `date-planner-questionnaire-${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-
-            //save to local
-              localStorage.setItem('questionnaireResults', JSON.stringify(validatedJson));
-        } catch (error) {
-            console.error('Failed to generate JSON file:', error);
-            alert('Error generating JSON file. Please check your answers and try again.');
-        }
-    };
 
     const handleBack = () => {
         if (currentStep > 1) {
@@ -476,48 +397,48 @@ export default function QuestionnaireForm() {
     const renderQuestion = () => {
         switch (currentStep) {
             case 1:
-                return (
-                    <div>
-                        <div className="text-center mb-6 sm:mb-8 px-2">
-                            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">
-                                When are you planning the date for?
-                            </h1>
-                        </div>
-                        <div className="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 mb-6 sm:mb-8 shadow-sm mx-2 sm:mx-0">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-base sm:text-lg font-medium text-gray-900">
-                                    {month.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-                                </h2>
-                                <CalendarIcon className="h-5 w-5 text-gray-400" />
-                            </div>
-                            <Controller
-                                name="date"
-                                control={control}
-                                render={({ field }) => (
-                                    <Calendar
-                                        mode="single"
-                                        selected={field.value}
-                                        onSelect={(date) => {
-                                            if (date && date >= tomorrow) {
-                                                field.onChange(date);
-                                                updateUrlDebounced();
-                                            }
-                                        }}
-                                        month={month}
-                                        onMonthChange={setMonth}
-                                        disabled={(date) => date < tomorrow}
-                                        className="w-full"
-                                        classNames={{
-                                            day_selected: "bg-red-500 text-white hover:bg-red-600 focus:bg-red-600",
-                                            day_today: "bg-gray-100 text-gray-900",
-                                            day_disabled: "text-gray-400 cursor-not-allowed"
-                                        }}
-                                    />
-                                )}
-                            />
-                        </div>
-                    </div>
-                );
+              return (
+          <div className="flex flex-col h-full">
+            <div className="text-center mb-6 sm:mb-8 px-2">
+              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">
+                When are you planning the date for?
+              </h1>
+            </div>
+            <div className="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 mb-6 sm:mb-8 shadow-sm mx-2 sm:mx-0 flex-1 overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base sm:text-lg font-medium text-gray-900">
+                  {month.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+                </h2>
+                <CalendarIcon className="h-5 w-5 text-gray-400" />
+              </div>
+              <Controller
+                name="date"
+                control={control}
+                render={({ field }) => (
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={(date) => {
+                      if (date && date >= tomorrow) {
+                        field.onChange(date);
+                        updateUrlDebounced();
+                      }
+                    }}
+                    month={month}
+                    onMonthChange={setMonth}
+                    disabled={(date) => date < tomorrow}
+                    className="w-full"
+                    classNames={{
+                      day_selected: "bg-red-500 text-white hover:bg-red-600 focus:bg-red-600",
+                      day_today: "bg-gray-100 text-gray-900",
+                      day_disabled: "text-gray-400 cursor-not-allowed"
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </div>
+        );
             case 2:
                 return (
                     <div>
@@ -914,86 +835,6 @@ export default function QuestionnaireForm() {
         handleNext();
     };
 
-    async function submitGenerate() {
-        try {
-            const currentValues = getValues();
-            const validatedAnswers = QuestionnaireStateSchema.parse(currentValues);
-
-            // Define JSON output schema
-            const JsonOutputSchema = z.object({
-                metadata: z.object({
-                    completedAt: z.string().datetime(),
-                    totalSteps: z.number(),
-                    version: z.string(),
-                    validation: z.object({
-                        isValid: z.boolean(),
-                        schema: z.string()
-                    })
-                }),
-                responses: z.object({
-                    step1_date: z.string().nullable(),
-                    step2_time: z.object({
-                        startTime: z.string(),
-                        endTime: z.string()
-                    }),
-                    step3_date_type: z.array(z.string()),
-                    step4_food: z.array(z.string()),
-                    step5_transportation: z.string(),
-                    step6_budget: z.string().regex(/^HKD \$\d{1,4}$/, "Budget must be in the format 'HKD $number' between HKD $0 and HKD $5000"),
-                    step7_intensity: z.string().regex(/^\d{1,3}%$/, "Intensity must be a percentage between 0% and 100%"),
-                    step8_location: z.array(z.string())
-                })
-            });
-
-            const questionnaireResults = {
-                metadata: {
-                    completedAt: new Date().toISOString(),
-                    totalSteps: totalSteps,
-                    version: "1.0",
-                    validation: {
-                        isValid: true,
-                        schema: "QuestionnaireStateSchema"
-                    }
-                },
-                responses: {
-                    step1_date: validatedAnswers.date ? validatedAnswers.date.toISOString().split("T")[0] : null,
-                    step2_time: {
-                        startTime: validatedAnswers.startTime,
-                        endTime: validatedAnswers.endTime
-                    },
-                    step3_date_type: validatedAnswers.dateType,
-                    step4_food: validatedAnswers.food,
-                    step5_transportation: validatedAnswers.transportation,
-                    step6_budget: `HKD $${validatedAnswers.budget[0]}`,
-                    step7_intensity: `${validatedAnswers.intensity[0]}%`,
-                    step8_location: validatedAnswers.location
-                }
-            };
-
-            // Validate the final JSON structure
-            const validatedJson = JsonOutputSchema.parse(questionnaireResults);
-
-            // Call the generatePlan function with questionnaireResults
-            const plan = await callPerplexityAPI(validatedJson);
-
-            // Create and download JSON file with the generated plan
-            const jsonString = JSON.stringify(plan, null, 2);
-            const blob = new Blob([jsonString], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `date-plan-${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-
-            console.log("Plan generated successfully");
-        } catch (error) {
-            console.error("Failed to generate plan:", error);
-            alert('Error generating plan. Please check your answers and try again.');
-        }
-    }
 
     return (
         <form onSubmit={handleFormSubmit} noValidate className="min-h-screen bg-gray-50 flex flex-col">
@@ -1055,15 +896,6 @@ export default function QuestionnaireForm() {
                             </Button>
                         </div>
 
-                        {/* Export JSON Button */}
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={submitGenerate}
-                            className="w-full py-2 sm:py-2 text-xs sm:text-sm text-gray-600 border-gray-200 hover:bg-gray-50 touch-manipulation min-h-[44px]"
-                        >
-                            Export Plan as JSON
-                        </Button>
                     </div>
                 </div>
             </div>

@@ -1,55 +1,105 @@
 import React from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
+// Define ItineraryItem type
 interface ItineraryItem {
-    id: string;
-    image: string;
-    title: string;
-    hasChange?: boolean;
-    time: string;
-    type: 'meal' | 'exhibition' | 'tour';
+  id: string;
+  image: string;
+  title: string;
+  time: string;
+  type: 'meal' | 'exhibition' | 'tour';
 }
-const ItineraryCard = ({ item }: { item: ItineraryItem }) => {
-  const typeStyles: Record<ItineraryItem['type'], string> = {
-    meal: 'bg-blue-100 text-blue-800',
-    exhibition: 'bg-green-100 text-green-800',
-    tour: 'bg-purple-100 text-purple-800',
+
+const ItineraryCard: React.FC<{ item: ItineraryItem }> = ({ item }) => {
+  const router = useRouter();
+  const typeVariants: Record<ItineraryItem['type'], string> = {
+    meal: 'meal', // Uses custom meal variant (blue)
+    exhibition: 'exhibition', // Uses custom exhibition variant (green)
+    tour: 'tour', // Uses custom tour variant (purple)
   };
+
+  const handleChange = () => {
+    console.log(`Change itinerary item: ${item.id}`);
+    // Add logic to modify the itinerary item (e.g., call AI planner API)
+  };
+
+  const handleBook = () => {
+   router.push(`/activity`);
+    console.log(`Book itinerary item: ${item.id}`);
+    // Add logic to book the itinerary item (e.g., call booking API)
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col md:flex-row">
-          <Image
-              src={item.image}
-              alt={item.title}
-              className="w-full md:w-1/3 h-48 object-cover" />
-      <div className="p-4 flex-1">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">{item.title}</h3>
-          {item.hasChange && (
-            <span className="text-sm bg-yellow-200 text-yellow-800 px-2 py-1 rounded">Changed</span>
-          )}
-        </div>
-              <p className="text-gray-600">{item.time}</p>
-              
-       <span className={`inline-block mt-2 px-3 py-1 rounded-full text-sm ${typeStyles[item.type]}`}>
-          {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
-        </span>
+    <Card className="overflow-hidden">
+      <div className="relative w-full h-48">
+        <Image
+          src={item.image}
+          alt={item.title}
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 33vw"
+          priority={item.id === '1'} // Prioritize first image for LCP
+          aria-describedby={`itinerary-title-${item.id}`}
+        />
       </div>
-    </div>
+      <CardHeader>
+        <div className="flex justify-between items-center gap-2 flex-wrap">
+          <CardTitle id={`itinerary-title-${item.id}`} className="text-lg">
+            {item.title}
+          </CardTitle>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleChange}
+              aria-label={`Change itinerary item ${item.title}`}
+            >
+              Change
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleBook}
+              aria-label={`Book itinerary item ${item.title}`}
+            >
+              Book
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <p className="text-gray-600 mt-1">{item.time}</p>
+        <Badge
+          //@ts-expect-error type error
+          variant={typeVariants[item.type]}
+          className="mt-2"
+          aria-label={`Type: ${item.type}`}
+        >
+          {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
+        </Badge>
+      </CardContent>
+    </Card>
   );
 };
-//@ts-expect-error type error
-const ItineraryDisplay = ({ itineraryData }) => {
+
+const ItineraryDisplay: React.FC<{ itineraryData: ItineraryItem[] }> = ({ itineraryData }) => {
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Itinerary</h1>
+    <div className="container mx-auto px-4 py-6">
+      <h1 className="text-2xl font-bold mb-6">Your Itinerary</h1>
       {Array.isArray(itineraryData) && itineraryData.length > 0 ? (
-        <div className="grid gap-4">
+        <ul className="grid gap-4" role="list">
           {itineraryData.map((item) => (
-            <ItineraryCard key={item.id} item={item} />
+            <li key={item.id}>
+              <ItineraryCard item={item} />
+            </li>
           ))}
-        </div>
+        </ul>
       ) : (
-        <p className="text-gray-600">No itinerary data available.</p>
+        <p className="text-gray-600 text-center">No itinerary data available.</p>
       )}
     </div>
   );
