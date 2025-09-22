@@ -36,7 +36,7 @@ export default function Activity() {
               <Image
                   width={1200 }
                   height={800}
-          src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=800&fit=crop&crop=center"
+          src="https://images.pexels.com/photos/1000454/pexels-photo-1000454.jpeg"
           alt="Pottery workshop"
           className="w-full h-full object-cover"
         />

@@ -23,103 +23,189 @@ const trending = [
      { id: 4, title: "Archery Tag at Lai Chi Kok", match: "70%", image: "https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=800&h=500&fit=crop" },
 ];
 
+  const sharedExperiences = [
+          
+                    { id:1,
+                        userAvatar: "https://wvhrwywa93.ufs.sh/f/qAkxodQH27JRFtxigVcjr8UNizbhKsQZ7xqLDTkOn1GuHe9g",
+                        title: "Found the best hidden cocktail bar",
+                        image: "/images/WA0004.jpg"
+    },
+              { id:2,
+                        userAvatar: "https://wvhrwywa93.ufs.sh/f/qAkxodQH27JR2aTK1poLABvuNSpJ3sUI4gdkTrcQKimlhfE8",
+                        userName: "Jess & Leo",
+                        title: "Our pottery class & cafe hopping day!",
+                        image: "/images/IMG_8205.jpg"
+                    },
+                ]
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-background max-w-md mx-auto relative">
       {/* Header */}
-      <div className="sticky top-0 bg-background/95 backdrop-blur-sm z-20">
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-foreground rounded-full flex items-center justify-center text-sm font-bold text-background">R</div>
-            <div className="w-9 h-9 bg-muted rounded-full flex items-center justify-center">👤</div>
-          </div>
-
-          <h1 className="text-2xl font-extrabold text-foreground">Reals</h1>
-
-          <div className="w-9 h-9 flex items-center justify-center">🛒</div>
-        </div>
-
-        <div className="px-4 pb-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search"
-              className="w-full pl-10 pr-4 py-2 bg-muted rounded-full border-none outline-none focus:ring-2 focus:ring-ring"
-            />
-            <Button variant="ghost" size="sm" className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground">
-              <SlidersHorizontal className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
+<div className="sticky top-0 bg-background/95 backdrop-blur-sm z-20 border-b border-border/50">
+  <div className="flex items-center justify-between px-4 py-4">
+    <div className="flex items-center gap-3">
+      <div className="w-10 h-10 bg-foreground rounded-full flex items-center justify-center text-base font-bold text-background">R</div>
+      <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center text-xl">👤</div>
+    </div>
+    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Reals</h1>
+    <Button variant="ghost" size="icon" aria-label="View cart">
+      <span className="text-2xl">🛒</span>
+    </Button>
+  </div>
+  <div className="px-4 pb-4">
+    <div className="relative">
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+      <input
+        type="text"
+        placeholder="Search activities or events"
+        className="w-full pl-10 pr-12 py-2.5 bg-muted rounded-full border-none outline-none focus:ring-2 focus:ring-primary shadow-sm transition-shadow"
+        aria-label="Search activities or events"
+      />
+      <Button
+        variant="ghost"
+        size="sm"
+        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
+        aria-label="Filter search"
+      >
+        <SlidersHorizontal className="w-5 h-5" />
+      </Button>
+    </div>
+  </div>
+</div>
       <div className="px-4 pb-28">
         {/* Popular horizontal scroller */}
-        <section className="mb-6">
-          <h2 className="text-lg font-semibold mb-3">Popular Arts & Culture</h2>
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {categories.map((c) => (
-              <Link key={c.id} href="/activity" className="min-w-[220px] rounded-lg overflow-hidden bg-card shadow-sm">
-                <div className="relative h-36 w-full">
+ <section className="py-6 px-4">
+  <div className="flex items-center justify-between mb-4">
+    <h2 className="text-2xl font-semibold text-foreground">Popular Arts & Culture</h2>
+    <Link href="/categories" className="text-sm text-primary hover:underline">See all</Link>
+  </div>
+  <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory">
+    {categories.map((c) => (
+      <Link
+        key={c.id}
+        href="/activity"
+        className="min-w-[220px] rounded-xl overflow-hidden bg-card shadow-md snap-start"
+        aria-label={`View ${c.title} activity`}
+      >
+        <div className="relative h-36 w-full">
+          <Image
+            width={600}
+            height={400}
+            src={c.image}
+            alt={`Image of ${c.title}`}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute left-3 bottom-3 text-white font-semibold text-base drop-shadow-md">{c.title}</div>
+        </div>
+      </Link>
+    ))}
+  </div>
+</section>
+        {/* Featured */}
+     <section className="py-6 px-4">
+  <div className="flex items-center justify-between mb-4">
+    <h2 className="text-2xl font-semibold text-foreground">Featured Reals</h2>
+    <Link href="/featured" className="text-sm text-primary hover:underline">See all</Link>
+  </div>
+  <Link
+    href="/post2"
+    className="block rounded-xl overflow-hidden bg-card shadow-lg hover:scale-[1.02] transition-transform"
+    aria-label={`View ${featured.title} featured post`}
+  >
+    <div className="relative h-44">
+      <Image
+        width={1200}
+        height={700}
+        src={featured.image}
+        alt={`Image of ${featured.title}`}
+        className="w-full h-full object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+      <div className="absolute left-4 bottom-4 text-white">
+        <h3 className="text-xl font-bold">{featured.title}</h3>
+        <div className="text-sm">Match {featured.match}</div>
+      </div>
+      <div className="absolute right-3 top-3 w-8 h-8 bg-black/40 rounded-full flex items-center justify-center">
+        <Star className="w-4 h-4 text-white" />
+      </div>
+    </div>
+  </Link>
+        </section>
+        
+
+        {/* sharedExperiences */}
+<section className="py-6 px-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-semibold text-foreground">Shared Experiences</h2>
+            <Link href="/experiences" className="text-sm text-primary hover:underline">See all</Link>
+          </div>
+          <div className="grid grid-cols-1 gap-4">
+            {sharedExperiences.map((exp) => (
+              <Link
+        key={exp.id}
+    href={exp.id === 1 ? "/post" : "/post2"}
+                className="rounded-xl overflow-hidden bg-card shadow-md hover:scale-[1.02] transition-transform"
+                aria-label={`View ${exp.userName}'s shared experience`}
+              >
+                <div className="relative h-40">
                   <Image
-                    width={600}
-                    height={400}
-                    src={c.image} alt={c.title} className="w-full h-full object-cover" />
-                  <div className="absolute left-3 bottom-3 text-white font-semibold text-sm drop-shadow">{c.title}</div>
+                    width={800}
+                    height={500}
+                    src={exp.image}
+                    alt={`Image of ${exp.title}`}
+                    sizes="(max-width: 768px) 100vw, 800px"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute left-3 bottom-3 text-white">
+                    <div className="flex items-center gap-2">
+                      <Image
+                        width={24}
+                        height={24}
+                        src={exp.userAvatar}
+                        alt={`${exp.userName}'s avatar`}
+                        className="w-6 h-6 rounded-full"
+                      />
+                      <span className="text-sm font-medium">{exp.userName}</span>
+                    </div>
+                    <h3 className="text-base font-semibold">{exp.title}</h3>
+                  </div>
                 </div>
               </Link>
             ))}
           </div>
-        </section>
-
-        {/* Featured */}
-        <section className="mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold">Featured Reals</h3>
-            <Link href="/" className="text-sm text-destructive">See all</Link>
-          </div>
-
-          <Link href="/post2" className="block rounded-xl overflow-hidden bg-card shadow-md">
-            <div className="relative h-44">
-              <Image
-                width={1200}
-                    height={700}
-                src={featured.image} alt={featured.title} className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-              <div className="absolute left-4 bottom-4 text-white">
-                <h4 className="text-xl font-bold">{featured.title}</h4>
-                <div className="text-sm">Match {featured.match}</div>
-              </div>
-              <div className="absolute right-3 top-3 w-8 h-8 bg-black/25 rounded-full flex items-center justify-center">
-                <Star className="w-4 h-4 text-white" />
-              </div>
-            </div>
-          </Link>
         </section>
 
         {/* Trending */}
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold">Trending Reals</h3>
-            <Link href="/" className="text-sm text-destructive">See all</Link>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            {trending.map((t) => (
-              <Link key={t.id} href="/post" className="rounded-lg overflow-hidden bg-card shadow-sm block">
-                <div className="relative h-28">
-                  <Image src={t.image} alt={t.title}
-                    width={800}
-                    height={500}
-                    className="w-full h-full object-cover" />
-                  <div className="absolute left-3 bottom-3 text-white font-semibold text-sm drop-shadow">{t.title}</div>
-                  <div className="absolute left-3 top-3 bg-black/50 px-2 py-1 rounded text-xs text-white">Match {t.match}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
+<section className="py-6 px-4">
+  <div className="flex items-center justify-between mb-4">
+    <h2 className="text-2xl font-semibold text-foreground">Trending Reals</h2>
+    <Link href="/trending" className="text-sm text-primary hover:underline">See all</Link>
+  </div>
+  <div className="grid grid-cols-2 gap-4">
+    {trending.map((t) => (
+      <Link
+        key={t.id}
+        href="/activity"
+        className="rounded-xl overflow-hidden bg-card shadow-md hover:scale-[1.02] transition-transform"
+        aria-label={`View ${t.title} trending post`}
+      >
+        <div className="relative h-28">
+          <Image
+            width={800}
+            height={500}
+            src={t.image}
+            alt={`Image of ${t.title}`}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute left-3 bottom-3 text-white font-semibold text-sm drop-shadow-md">{t.title}</div>
+          <div className="absolute left-3 top-3 bg-black/60 px-2 py-1 rounded text-xs text-white">Match {t.match}</div>
+        </div>
+      </Link>
+    ))}
+  </div>
+</section>
       </div>
 
       <BottomNavigation />
