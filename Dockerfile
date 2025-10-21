@@ -1,34 +1,28 @@
-# Use Node.js LTS as base image
-FROM node:20-alpine AS base
-
-
-
-# Install pnpm globally
-RUN npm install -g pnpm
+# Use the official Node.js 20 image (slim for smaller size)
+FROM node:20-slim
 
 # Set working directory
 WORKDIR /app
 
-# Copy package.json and pnpm-lock.yaml
-COPY package.json pnpm-lock.yaml ./
+# Install dependencies for building
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies with pnpm
-RUN pnpm install 
-# frozen xxxx failed
+# Copy package.json and package-lock.json (or yarn.lock)
+COPY package*.json ./
 
+# Install dependencies
+RUN npm install
 
-
-# Copy the rest of the application
+# Copy the rest of the application code
 COPY . .
 
-#Ensure .env.local is loaded by setting ENV before running
-
-
 # Build the Next.js app
-RUN pnpm build
+RUN npm run build
 
-# Expose port
+# Expose the port the app runs on
 EXPOSE 3000
 
 # Start the app
-CMD ["pnpm", "start"]
+CMD ["npm", "run", "start"]
