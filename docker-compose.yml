@@ -1,22 +1,21 @@
 
 version: '3.8'
 services:
-  app:
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
-      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     environment:
-      - BETTER_AUTH_URL=${BETTER_AUTH_URL}
-      - DATABASE_URL=${DATABASE_URL}
-      - DATABASE_URL=${DATABASE_URL}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - PLEX_API_KEY=${PLEX_API_KEY}
+       - BETTER_AUTH_URL=${BETTER_AUTH_URL}
+        - DATABASE_URL=${DATABASE_URL}
+        - DATABASE_URL=${DATABASE_URL}
+        - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+        - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+        - OPENAI_API_KEY=${OPENAI_API_KEY}
+        - PLEX_API_KEY=${PLEX_API_KEY}
     volumes:
       - .:/app
       - /app/node_modules

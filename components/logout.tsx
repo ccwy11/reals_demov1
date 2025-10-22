@@ -2,6 +2,7 @@
 import { authClient } from '@/lib/auth-client'
 import { Button } from './ui/button'
 import { toast } from 'sonner'
+import { useRouter } from "next/navigation"
 import { LogOutIcon } from 'lucide-react'
 
 export function Logout() {
@@ -10,6 +11,7 @@ export function Logout() {
 
         await authClient.signOut()
         toast.success("Logged out successfully")
+       
 
     }
     return (
