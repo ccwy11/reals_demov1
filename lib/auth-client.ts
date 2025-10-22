@@ -1,14 +1,10 @@
-import { createAuthClient } from "better-auth/react";
+import { createAuthClient } from "better-auth/react"
 import { config } from 'dotenv';
 
 // config({ path: '.env' });
 
 export const authClient = createAuthClient({
-    baseURL:"http://localhost:3000",
-    // process.env.DATABASE_URL,
-
-    plugins: [
-        // organizationClient(),
-        // lastLoginMethodClient()
-    ]
-});
+    /** The base URL of the server (optional if you're using the same domain) */
+    baseURL:   "http://localhost:3000",
+     //   process.env.DATABASE_URL,
+})
