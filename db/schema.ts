@@ -4,6 +4,8 @@ import {
     timestamp,
     boolean,
     integer,
+    serial,
+    jsonb
 } from "drizzle-orm/pg-core";
 import { z } from "zod"
 //z.object data validation because it is write
@@ -22,6 +24,8 @@ export const user = pgTable("user", {
     updatedAt: timestamp("updated_at")
         .$defaultFn(() => /* @__PURE__ */ new Date())
         .notNull(),
+    savedWishlist: jsonb('saved_wishlist').$type<number[]>().default([]),
+    
 });
 
 export const session = pgTable("session", {
@@ -70,15 +74,6 @@ export const verification = pgTable("verification", {
 
 
 
-export const schema = {
-    user,
-    session,
-    account,
-    verification,
-};
-//later import again from form page
-//later import again from form page
-
 
 
 export const QuestionnaireStateSchema = z.object({
@@ -106,3 +101,53 @@ export const planSchema = z.object({
     intensity: z.array(z.number()),
     location: z.array(z.string()),
 });
+
+
+//develop schema for events and listing 
+// === TABLES ===
+export const events = pgTable('events', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  price: text('price'),
+  description: text('description'),
+  photo: text('photo').notNull(),
+  isEvent: boolean('is_event').default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+
+// === ZOD SCHEMAS ===
+export const EventSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  price: z.string().nullable(),
+  description: z.string().nullable(),
+  photo: z.string(),
+  isEvent: z.boolean(),
+  createdAt: z.string().datetime(),
+});
+
+export const SaveWishlistSchema = z.object({
+  userId: z.string(),
+  itemId: z.number(),
+});
+
+export const ItinerarySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  items: z.array(z.number()),
+  createdAt: z.string().datetime(),
+});
+
+export type Event = z.infer<typeof EventSchema>;
+export type Itinerary = z.infer<typeof ItinerarySchema>;
+
+export const schema = {
+    user,
+    session,
+    account,
+    verification,
+};
+//later import again from form page
+//later import again from form page
+

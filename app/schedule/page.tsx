@@ -2,7 +2,7 @@
 import { Search, SlidersHorizontal, Heart, Plus, Calendar, Settings, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import BottomNav from "@/components/bottomnav";
+import BottomNav from "@/components/Bottomnav";
 
 const bookings = [
     {
