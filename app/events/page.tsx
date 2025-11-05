@@ -1,42 +1,43 @@
-"use client";
-
+// "use client";
+import { getEvents  } from '@/server/events';
 import AppHeader from "@/components/AppHeader";
 import BottomNavigation from "@/components/Bottomnav";
 import MediaCard from "@/components/MediaCard";
 import Chip from "@/components/Chip";
 import Link from "next/link";
 
-const events = [
-  {
-    id: 1,
-    title: "Tung Hing Glass & Pottery - Evening Workshop",
-    date: "2025/11/12",
-    location: "Wan Chai",
-    price: "$250",
-    match: "89%",
-    image: "https://images.unsplash.com/photo-1504198453319-5ce911bafcde?w=1200&h=700&fit=crop"
-  },
-  {
-    id: 2,
-    title: "Archery Tag at Lai Chi Kok",
-    date: "2025/10/03",
-    location: "Lai Chi Kok",
-    price: "$120",
-    match: "70%",
-    image: "https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=800&h=500&fit=crop"
-  },
-  {
-    id: 3,
-    title: "Cocktail Masterclass at Penicillin",
-    date: "2025/09/20",
-    location: "Central",
-    price: "$180",
-    match: "82%",
-    image: "https://images.unsplash.com/photo-1542444459-db6d3d4f9b2b?w=800&h=500&fit=crop"
-  }
-];
+// const events = [
+//   {
+//     id: 1,
+//     title: "Tung Hing Glass & Pottery - Evening Workshop",
+//     date: "2025/11/12",
+//     location: "Wan Chai",
+//     price: "$250",
+//     match: "89%",
+//     image: "https://images.unsplash.com/photo-1504198453319-5ce911bafcde?w=1200&h=700&fit=crop"
+//   },
+//   {
+//     id: 2,
+//     title: "Archery Tag at Lai Chi Kok",
+//     date: "2025/10/03",
+//     location: "Lai Chi Kok",
+//     price: "$120",
+//     match: "70%",
+//     image: "https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=800&h=500&fit=crop"
+//   },
+//   {
+//     id: 3,
+//     title: "Cocktail Masterclass at Penicillin",
+//     date: "2025/09/20",
+//     location: "Central",
+//     price: "$180",
+//     match: "82%",
+//     image: "https://images.unsplash.com/photo-1542444459-db6d3d4f9b2b?w=800&h=500&fit=crop"
+//   }
+// ];
 
-export default function EventsPage() {
+export default async function EventsPage() {
+  const events = await getEvents();
   return (
     <div className="min-h-screen bg-background max-w-md mx-auto relative">
       <AppHeader />

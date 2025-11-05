@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import {
     pgTable,
     text,
@@ -5,7 +6,8 @@ import {
     boolean,
     integer,
     serial,
-    jsonb
+    jsonb,
+    uniqueIndex
 } from "drizzle-orm/pg-core";
 import { z } from "zod"
 //z.object data validation because it is write
@@ -107,10 +109,11 @@ export const planSchema = z.object({
 // === TABLES ===
 export const events = pgTable('events', {
   id: serial('id').primaryKey(),
-  name: text('name').notNull(),
+    title: text('name').notNull(),
+  location: text('location').notNull(),
   price: text('price'),
   description: text('description'),
-  photo: text('photo').notNull(),
+  image: text('image').notNull(),
   isEvent: boolean('is_event').default(true),
   createdAt: timestamp('created_at').defaultNow(),
 });
@@ -119,28 +122,54 @@ export const events = pgTable('events', {
 // === ZOD SCHEMAS ===
 export const EventSchema = z.object({
   id: z.number(),
-  name: z.string(),
+    title: z.string(),
+  location: z.string(),
   price: z.string().nullable(),
   description: z.string().nullable(),
-  photo: z.string(),
+  image: z.string(),
   isEvent: z.boolean(),
   createdAt: z.string().datetime(),
 });
 
-export const SaveWishlistSchema = z.object({
-  userId: z.string(),
-  itemId: z.number(),
-});
-
-export const ItinerarySchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  items: z.array(z.number()),
-  createdAt: z.string().datetime(),
-});
-
 export type Event = z.infer<typeof EventSchema>;
-export type Itinerary = z.infer<typeof ItinerarySchema>;
+
+// Wishlists table (junction for user-event many-to-many)
+export const wishlists = pgTable(
+  'wishlists',
+  {
+    id: serial('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    eventId: integer('event_id')
+      .notNull()
+      .references(() => events.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    // One user can wishlist the same event only once
+    uniqUserEvent: uniqueIndex('uniq_user_event').on(table.userId, table.eventId),
+  })
+);
+// Relations for queries
+export const eventsRelations = relations(events, ({ many }) => ({
+  wishlists: many(wishlists),
+}));
+
+export const wishlistsRelations = relations(wishlists, ({ one }) => ({
+  event: one(events, {
+    fields: [wishlists.eventId],
+    references: [events.id],
+  }),
+  user: one(user, {
+    fields: [wishlists.userId],
+    references: [user.id],
+  }),
+}));
+
+export const eventIdSchema = z.object({
+  eventId: z.coerce.number().int().positive(),
+});
 
 export const schema = {
     user,

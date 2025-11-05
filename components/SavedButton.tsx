@@ -1,79 +1,53 @@
 // components/SavedButton.tsx
-'use client';
-import { useDispatch, useSelector } from 'react-redux';
-import { addToWishlist, removeFromWishlist } from '@/components/features/wishlistSlice';
-import { selectIsInWishlist } from '@/components/features/wishlistSelectors';
-import { toast } from 'sonner'; // ← Sonner
-import { Heart } from 'lucide-react';
-import { useGetSavedQuery, useToggleWishlistMutation } from '@/services/api';
+"use client";
+import useWishlistStore from "@/lib/store/useWishlistStore";
+import { Button } from "./ui/button";
+import { Heart } from "lucide-react";
+import { toast } from "sonner";
+import { useRouter } from 'next/compat/router'
 
-
-
-export default function SavedButton({ event }: { event: { id: number; name: string } }) {
-  const [toggle] = useToggleWishlistMutation();
-  const { data } = useGetSavedQuery();
-  const isSaved = data?.wishlist.some((i: any) => i.id === event.id);
-
-  const handleClick = () => {
-    toggle(event.id);
-    toast.success(isSaved ? 'Removed' : 'Saved!', {
-      description: event.name,
-      action: isSaved ? { label: 'Undo', onClick: () => toggle(event.id) } : undefined,
-    });
-  };
-
-  return (
-    <button onClick={handleClick} className="p-3 bg-white rounded-full shadow-md hover:shadow-lg">
-      <Heart size={24} fill={isSaved ? 'red' : 'none'} color={isSaved ? 'red' : 'gray'} />
-    </button>
-  );
+interface SavedButtonProps {
+  eventId: string;
+  eventName?: string;
 }
 
-// const mockItem = {
-//   id: 1,
-//   name: 'Sunset Yoga on Beach',
-//   price: '25',
-//   photo: '/api/placeholder/300/200',
-//   isEvent: true,
-// };
+export default function SavedButton({ eventId, eventName }: SavedButtonProps) {
+  const router = useRouter();
+  const { isSaved, toggleEvent } = useWishlistStore();
 
-// export default function SavedButton() {
-//   const dispatch = useDispatch();
-//   const isSaved = useSelector(selectIsInWishlist(mockItem.id));
+  const handleClick = async () => {
+    const wasSaved = isSaved(eventId);
+    await toggleEvent(eventId);
 
-//   const handleClick = () => {
-//     if (isSaved) {
-//       dispatch(removeFromWishlist(mockItem.id));
-//       toast.success('Removed from wishlist', {
-//         description: 'You can add it back anytime.',
-//         action: {
-//           label: 'Undo',
-//           onClick: () => dispatch(addToWishlist(mockItem)),
-//         },
-//       });
-//     } else {
-//       dispatch(addToWishlist(mockItem));
-//       toast.success('Added to wishlist!', {
-//         description: `${mockItem.name} is saved.`,
-//         action: {
-//           label: 'View',
-//           onClick: () => window.location.href = '/wishlist',
-//         },
-//       });
-//     }
-//   };
+    if (!wasSaved) {
+      toast.success(`Added "${eventName ?? 'event'}" to your wishlist`,
+        {
+            description: eventName ? `${eventName} is saved.` : 'Event saved.',
+          action: {
+            label: 'View',
+            onClick: () => router?.push('/wishlist'),
+          }
+          });
+    } else {
+      toast.success(`Removed "${eventName ?? 'event'}" from your wishlist`);
+    }
+}
 
-//   return (
-//     <button
-//       onClick={handleClick}
-//       className="p-3 bg-white rounded-full shadow-md hover:shadow-lg transition-all"
-//     >
-//       <Heart
-//         size={24}
-//         fill={isSaved ? 'red' : 'none'}
-//         color={isSaved ? 'red' : 'gray'}
-//         className="transition-all"
-//       />
-//     </button>
-//   );
-// }
+
+const saved = isSaved(eventId);
+
+
+  return (
+<Button
+      variant={saved ? 'default' : 'outline'}
+      size="icon"
+      onClick={handleClick}
+      className="rounded-full transition-all hover:scale-110"
+      aria-label={saved ? 'Remove from wishlist' : 'Add to wishlist'}
+    >
+      <Heart
+        className={`h-5 w-5 transition-all ${saved ? 'fill-current' : ''}`}
+      />
+    </Button>
+  );
+}

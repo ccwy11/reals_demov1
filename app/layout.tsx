@@ -7,6 +7,10 @@ import { Toaster } from "@/components/ui/sonner"
 import { Provider } from 'react-redux';
 import { store } from './store';
 import "./globals.css";
+import { useEffect } from "react";
+import useWishlistStore from "@/lib/store/useWishlistStore";
+import { Session } from "better-auth";
+import { authClient } from "@/lib/auth-client";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,6 +32,19 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { data: session, isPending } = authClient.useSession()// or however you get session
+  const hydrate = useWishlistStore((s) => s.hydrate);
+
+  useEffect(() => {
+    // Only hydrate when:
+    // - Session exists (user logged in)
+    // - Not loading
+    // - Hydration hasn't run yet (store handles this internally)
+    if (session?.user && !isPending) {
+      hydrate();
+    }
+  }, [session, isPending, hydrate]);
+
   return (
     <html lang="en">
       <body

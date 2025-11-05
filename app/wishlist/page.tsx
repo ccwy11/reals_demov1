@@ -11,117 +11,111 @@ import WishlistCounter from '@/components/WishlistCounter';
 import { removeFromWishlist } from '@/components/features/wishlistSlice';
 import { useDispatch } from 'react-redux';
 import toast from 'react-hot-toast';
+import { useEffect, useState } from "react";
+import useWishlistStore from "@/lib/store/useWishlistStore";
+import { get } from "http";
+import { getUserWishlist } from "@/server/wishlist";
+import { set } from "zod";
+import EventsMediaCard from "@/components/EventsMediaCard";
+import { Loader2 } from "lucide-react";
 
+
+interface WishlistEvent{
+  id: string;
+  title: string;
+  description?: string;
+}
 
 export default function WishlistPage() {
-  const items = useSelector(selectWishlistItems);
-  const dispatch = useDispatch();
+  const [events, setEvents] = useState<WishlistEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toggleEvent, isSaved } = useWishlistStore();
+  
+  useEffect(() => {
+    async function loadWishlist() {
+      setLoading(true);
+      try {
+        const result = await getUserWishlist();
+        if (result.success && result.data) {
+          setEvents(result.data);
+        } else {
+          toast.error(result.message || 'Failed to load wishlist.');
+        }
+      } catch (error) {
+        toast.error('An error occurred while loading the wishlist.');
+      } finally {
+        setLoading(false);
+      }
+    }
 
- const handleRemove = (id: number, name: string) => {
-    dispatch(removeFromWishlist(id));
-    toast.success('Removed', {
-      description: `${name} removed from wishlist.`,
-      action: {
-        label: 'Undo',
-        onClick: () => {
-          // Re-add logic (fetch item or store in memory)
-          toast.loading('Restoring...');
-          setTimeout(() => toast.dismiss(), 1000);
-        },
-      },
-    });
-  };
+    loadWishlist();
+  }, []);
 
+
+  const handleRemove = async (eventId: string, title: string) => {
+    await toggleEvent(eventId);
+    setEvents((prev) => prev.filter((ev) => ev.id !== eventId));
+    toast.success(`Removed "${title}" from your wishlist.`,
+      { duration: 3000 }
+    );
+  }
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-       <AppHeader title="Wishlist" showSearch={false} />
+    <div className="container mx-auto p-6 max-w-4xl pb-24">
+      <AppHeader title="Wishlist" showSearch={false} />
 
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">My Wishlist</h1>
-        <WishlistCounter />
+        <div className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
+          {events.length} {events.length === 1 ? "item" : "items"}
+        </div>
       </div>
 
-      {items.length === 0 ? (
+      {loading ? (
+        <div className="flex flex-col items-center py-12 gap-4">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <p className="text-muted-foreground">Loading your wishlist...</p>
+        </div>
+      ) : events.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">Your wishlist is empty</p>
-          <p className="text-sm mt-2">Start adding items you love!</p>
+          <p className="text-sm mt-2">Start adding events you love!</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {items.map((item) => (
+        <div className="space-y-6">
+          {events.map((event) => (
             <div
-              key={item.id}
-              className="flex items-center gap-4 p-4 border rounded-lg hover:shadow-md transition-all"
+              key={event.id}
+              className="relative bg-card rounded-xl shadow-sm overflow-hidden border"
             >
-              <div className="bg-gray-200 border-2 border-dashed rounded-xl w-20 h-20" />
-              <div className="flex-1">
-                <h3 className="font-semibold text-lg">{item.name}</h3>
-                <p className="text-sm text-gray-600">
-                  {item.isEvent ? 'Event' : 'Product'} • {item.price ? `$${item.price}` : 'Free'}
-                </p>
+              {/* Reuse MediaCard */}
+              <div className="p-4 pb-16">
+                <EventsMediaCard
+                  id={event.id}
+                  title={event.title}
+                  location={event.description?.split("•")[1] || "Location TBD"}
+                  price="View Details"
+                  href={`/events/${event.id}`}
+                />
               </div>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => handleRemove(item.id)}
-              >
-                Remove
-              </Button>
+
+              {/* Remove Button */}
+              <div className="absolute bottom-3 right-3">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleRemove(event.id, event.title)}
+                >
+                  Remove
+                </Button>
+              </div>
             </div>
           ))}
         </div>
       )}
+
       <BottomNavigation />
     </div>
-  );
+  )
+   
+  
 }
-
-// const sample = [
-//   {
-//     id: 1,
-//     title: "Tung Hing Glass & Pottery - Evening Workshop",
-//     date: "2025/11/12",
-//     location: "Wan Chai",
-//     price: "$250",
-//     image: "https://images.unsplash.com/photo-1504198453319-5ce911bafcde?w=1200&h=700&fit=crop"
-//   },
-//   {
-//     id: 2,
-//     title: "Cocktail Masterclass at Penicillin",
-//     date: "2025/09/20",
-//     location: "Central",
-//     price: "$180",
-//     image: "https://images.unsplash.com/photo-1542444459-db6d3d4f9b2b?w=800&h=500&fit=crop"
-//   }
-// ];
-
-// export default function WishlistPage() {
-//   const hasItems = sample.length > 0;
-
-//   return (
-//     <div className="min-h-screen bg-background max-w-md mx-auto relative">
-//       <AppHeader title="Wishlist" showSearch={false} />
-
-//       <div className="px-4 pb-28 pt-4">
-//         {hasItems ? (
-//           <div className="space-y-4">
-//             {sample.map((it) => (
-//                   <MediaCard key={it.id} title={it.title} date={it.date} location={it.location} price={it.price} image={it.image} href="/activity" />
-//             ))}
-//           </div>
-//         ) : (
-//           <div className="flex-1 flex flex-col items-center justify-center py-20">
-//             <div className="w-14 h-14 mb-4 rounded-full bg-muted flex items-center justify-center">❤</div>
-//             <h2 className="text-xl font-semibold mb-2">Your wishlist is empty</h2>
-//             <p className="text-muted-foreground mb-6">Explore experiences and save them here for later.</p>
-//             <Button asChild>
-//               <Link href="/">Explore</Link>
-//             </Button>
-//           </div>
-//         )}
-//       </div>
-
-//       <BottomNavigation />
-//     </div>
-//   );
-// }

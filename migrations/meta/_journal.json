@@ -8,6 +8,20 @@
       "when": 1761616581668,
       "tag": "0000_loving_maximus",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1762222031833,
+      "tag": "0001_boring_loa",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1762226315990,
+      "tag": "0002_wealthy_jackpot",
+      "breakpoints": true
     }
   ]
 }

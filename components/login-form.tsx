@@ -64,6 +64,7 @@ export function LoginForm({
 
     if (success) {
       toast.success(message as string)
+     
       router.push("/dashboard")
     } else {
       toast.error(message as string)
