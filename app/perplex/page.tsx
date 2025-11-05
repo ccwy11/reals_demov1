@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { callPerplexityAPI } from "../../server/ai";
 import Link from "next/link";
-import BottomNavigation from "@/components/bottomnav";
+import BottomNavigation from "@/components/Bottomnav";
 import ItineraryDisplay from "@/components/ItineraryDisplay";
 import { Button } from "@/components/ui/button";
 

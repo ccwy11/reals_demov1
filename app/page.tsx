@@ -1,8 +1,11 @@
 import { Search, SlidersHorizontal, Heart, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import BottomNavigation from "@/components/bottomnav";
+import BottomNavigation from "@/components/Bottomnav";
 import Image from "next/image";
 import Link from "next/link";
+import AppHeader from "@/components/AppHeader";
+import SavedButton from '@/components/SavedButton';
+
 
 const categories = [
   { id: 1, title: "teamLab Future Park", image: "https://images.pexels.com/photos/1793037/pexels-photo-1793037.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" },
@@ -41,43 +44,15 @@ const trending = [
 export default function Home() {
   return (
     <div className="min-h-screen bg-background max-w-md mx-auto relative">
+      <AppHeader/>
       {/* Header */}
-<div className="sticky top-0 bg-background/95 backdrop-blur-sm z-20 border-b border-border/50">
-  <div className="flex items-center justify-between px-4 py-4">
-    <div className="flex items-center gap-3">
-      <div className="w-10 h-10 bg-foreground rounded-full flex items-center justify-center text-base font-bold text-background">R</div>
-      <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center text-xl">👤</div>
-    </div>
-    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Reals</h1>
-    <Button variant="ghost" size="icon" aria-label="View cart">
-      <span className="text-2xl">🛒</span>
-    </Button>
-  </div>
-  <div className="px-4 pb-4">
-    <div className="relative">
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-      <input
-        type="text"
-        placeholder="Search activities or events"
-        className="w-full pl-10 pr-12 py-2.5 bg-muted rounded-full border-none outline-none focus:ring-2 focus:ring-primary shadow-sm transition-shadow"
-        aria-label="Search activities or events"
-      />
-      <Button
-        variant="ghost"
-        size="sm"
-        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
-        aria-label="Filter search"
-      >
-        <SlidersHorizontal className="w-5 h-5" />
-      </Button>
-    </div>
-  </div>
-</div>
+
       <div className="px-4 pb-28">
         {/* Popular horizontal scroller */}
  <section className="py-6 px-4">
   <div className="flex items-center justify-between mb-4">
-    <h2 className="text-2xl font-semibold text-foreground">Popular Arts & Culture</h2>
+            <h2 className="text-2xl font-semibold text-foreground">Popular Arts & Culture</h2>
+            
     <Link href="/categories" className="text-sm text-primary hover:underline">See all</Link>
   </div>
   <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory">
@@ -101,7 +76,24 @@ export default function Home() {
       </Link>
     ))}
   </div>
-</section>
+        </section>
+        {/* wishlist */}
+<section>
+      <div className="p-8">
+      <h1 className="text-2xl font-bold mb-6">Explore Events</h1>
+      <div className="flex items-center gap-4 p-6 border rounded-lg">
+        <div className="bg-gray-200 border-2 border-dashed rounded-xl w-32 h-32" />
+        <div>
+          <h3 className="font-semibold">Sunset Yoga on Beach</h3>
+          <p className="text-sm text-gray-600">$25 • Event</p>
+        </div>
+        <SavedButton />
+      </div>
+      <Link href="/wishlist" className="mt-6 inline-block text-blue-600 hover:underline">
+        → Go to Wishlist
+      </Link>
+          </div>
+          </section>
         {/* Featured */}
      <section className="py-6 px-4">
   <div className="flex items-center justify-between mb-4">
@@ -207,6 +199,8 @@ export default function Home() {
   </div>
 </section>
       </div>
+
+
 
       <BottomNavigation />
     </div>
