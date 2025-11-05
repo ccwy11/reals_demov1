@@ -4,9 +4,10 @@ import { ArrowLeft, RotateCcw, Heart, Search, Plus, Calendar, Settings, Star } f
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import BottomNavigation from "@/components/bottomnav";
+import BottomNavigation from "@/components/Bottomnav";
 import Image from "next/image";
 import Link from "next/link";
+import AppHeader from "@/components/AppHeader";
 
 export default function Activity() {
   const [quantity, setQuantity] = useState(2);
@@ -17,19 +18,7 @@ export default function Activity() {
 
   return (
     <div className="min-h-screen bg-background max-w-md mx-auto relative">
-      {/* Header (consistent with app) */}
-      <div className="sticky top-0 bg-background/95 backdrop-blur-sm z-20">
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-foreground rounded-full flex items-center justify-center text-sm font-bold text-background">R</div>
-            <div className="w-9 h-9 bg-muted rounded-full flex items-center justify-center">👤</div>
-          </div>
-
-          <h1 className="text-2xl font-extrabold text-foreground">Reals</h1>
-
-          <div className="w-9 h-9 flex items-center justify-center">🛒</div>
-        </div>
-      </div>
+<AppHeader/>
 
       {/* Hero Image Section */}
       <div className="relative h-80">

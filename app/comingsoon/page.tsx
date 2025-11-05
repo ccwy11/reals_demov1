@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Hourglass } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import BottomNavigation from "@/components/bottomnav";
+import BottomNavigation from "@/components/Bottomnav";
 
 interface Props {
   feature?: string;

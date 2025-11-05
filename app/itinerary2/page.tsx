@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { callPerplexityAPI } from "../../server/ai";
 import Link from "next/link";
-import BottomNav from "@/components/bottomnav";
+import BottomNav from "@/components/Bottomnav";
 
 export default function ItineraryPage() {
   const [itineraryData, setItineraryData] = useState(null);

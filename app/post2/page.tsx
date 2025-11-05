@@ -9,7 +9,7 @@ import {
     CarouselNext,
     CarouselPrevious,
 } from "@/components/ui/carousel";
-import BottomNavigation from '@/components/bottomnav';
+import BottomNavigation from '@/components/Bottomnav';
 // Itinerary data
 const itineraryItems = [
     {

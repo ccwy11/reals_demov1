@@ -1,9 +1,13 @@
+import { relations } from "drizzle-orm";
 import {
     pgTable,
     text,
     timestamp,
     boolean,
     integer,
+    serial,
+    jsonb,
+    uniqueIndex
 } from "drizzle-orm/pg-core";
 import { z } from "zod"
 //z.object data validation because it is write
@@ -22,6 +26,8 @@ export const user = pgTable("user", {
     updatedAt: timestamp("updated_at")
         .$defaultFn(() => /* @__PURE__ */ new Date())
         .notNull(),
+    savedWishlist: jsonb('saved_wishlist').$type<number[]>().default([]),
+    
 });
 
 export const session = pgTable("session", {
@@ -70,15 +76,6 @@ export const verification = pgTable("verification", {
 
 
 
-export const schema = {
-    user,
-    session,
-    account,
-    verification,
-};
-//later import again from form page
-//later import again from form page
-
 
 
 export const QuestionnaireStateSchema = z.object({
@@ -106,3 +103,80 @@ export const planSchema = z.object({
     intensity: z.array(z.number()),
     location: z.array(z.string()),
 });
+
+
+//develop schema for events and listing 
+// === TABLES ===
+export const events = pgTable('events', {
+  id: serial('id').primaryKey(),
+    title: text('name').notNull(),
+  location: text('location').notNull(),
+  price: text('price'),
+  description: text('description'),
+  image: text('image').notNull(),
+  isEvent: boolean('is_event').default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+
+// === ZOD SCHEMAS ===
+export const EventSchema = z.object({
+  id: z.number(),
+    title: z.string(),
+  location: z.string(),
+  price: z.string().nullable(),
+  description: z.string().nullable(),
+  image: z.string(),
+  isEvent: z.boolean(),
+  createdAt: z.string().datetime(),
+});
+
+export type Event = z.infer<typeof EventSchema>;
+
+// Wishlists table (junction for user-event many-to-many)
+export const wishlists = pgTable(
+  'wishlists',
+  {
+    id: serial('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    eventId: integer('event_id')
+      .notNull()
+      .references(() => events.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    // One user can wishlist the same event only once
+    uniqUserEvent: uniqueIndex('uniq_user_event').on(table.userId, table.eventId),
+  })
+);
+// Relations for queries
+export const eventsRelations = relations(events, ({ many }) => ({
+  wishlists: many(wishlists),
+}));
+
+export const wishlistsRelations = relations(wishlists, ({ one }) => ({
+  event: one(events, {
+    fields: [wishlists.eventId],
+    references: [events.id],
+  }),
+  user: one(user, {
+    fields: [wishlists.userId],
+    references: [user.id],
+  }),
+}));
+
+export const eventIdSchema = z.object({
+  eventId: z.coerce.number().int().positive(),
+});
+
+export const schema = {
+    user,
+    session,
+    account,
+    verification,
+};
+//later import again from form page
+//later import again from form page
+

@@ -1,9 +1,8 @@
 'use client'
-import BottomNavigation from "@/components/bottomnav";
 import Link from "next/link";
-// import AppHeader from "../components/AppHeader";
-// import BottomNavigation from "../components/Bottomnav";
-// import Chip from "../components/Chip";
+import AppHeader from "@/components/AppHeader";
+import BottomNavigation from "@/components/Bottomnav";
+import Chip from "@/components/Chip";
 
 const whatToDo = [
   { label: "Workshops", emoji: "🛠️" },
