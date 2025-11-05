@@ -2,14 +2,8 @@
 
 import AppHeader from "@/components/AppHeader";
 import BottomNavigation from "@/components/Bottomnav";
-import MediaCard from "@/components/MediaCard";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useSelector } from 'react-redux';
-import { selectWishlistItems } from '@/components/features/wishlistSelectors';
-import WishlistCounter from '@/components/WishlistCounter';
-import { removeFromWishlist } from '@/components/features/wishlistSlice';
-import { useDispatch } from 'react-redux';
 import toast from 'react-hot-toast';
 import { useEffect, useState } from "react";
 import useWishlistStore from "@/lib/store/useWishlistStore";

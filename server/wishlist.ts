@@ -131,7 +131,7 @@ export async function getWishlistIds(): Promise<string[]> {
       .from(wishlists)
       .where(eq(wishlists.userId, session.user.id));
 
-    return result.map((row) => row.eventId);
+    return result.map((row) => String(row.eventId));
   } catch (error) {
     console.error('getWishlistIds error:', error);
     return [];
