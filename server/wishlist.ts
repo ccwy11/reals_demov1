@@ -2,13 +2,18 @@
 
 import { db } from "@/db/drizzle";
 import { eventIdSchema, events, wishlists } from "@/db/schema";
-import { auth } from "@/lib/auth";
+
 import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import z from "zod";
+import { getAuthHandler } from "@/lib/auth";   // <-- the factory we created
 
+
+type AuthInstance = ReturnType<typeof getAuthHandler>;
+const getAuth = (): AuthInstance => getAuthHandler();
 
 export async function getUserWishlist() {
+  const auth = getAuth();
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -41,6 +46,7 @@ export async function getUserWishlist() {
 }
 
 export async function addToWishlist(formData: FormData) {
+    const auth = getAuth();
     try {
         // 1. Validate input
         const raw = Object.fromEntries(formData.entries());
@@ -83,6 +89,7 @@ export async function addToWishlist(formData: FormData) {
     }
 }
 export async function removeFromWishlist(formData: FormData) {
+    const auth = getAuth();
     try {
         // 1. Validate input
         const raw = Object.fromEntries(formData.entries());
@@ -122,6 +129,7 @@ export async function removeFromWishlist(formData: FormData) {
 }
 
 export async function getWishlistIds(): Promise<string[]> {
+    const auth = getAuth();
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) return [];

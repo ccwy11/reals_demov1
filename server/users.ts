@@ -1,8 +1,22 @@
 "use server";
-import { auth } from "@/lib/auth"
-import { success } from "better-auth";
+
+import { getAuthHandler } from "@/lib/auth";   // <-- the factory we created
+
+
+type AuthInstance = ReturnType<typeof getAuthHandler>;
+
+/**
+ * Helper – creates a fresh auth instance for each server action.
+ * (You could also cache it globally if you want to reuse the DB pool)
+ */
+const getAuth = (): AuthInstance => getAuthHandler();
+
+
+
 
 export const signIn = async (email: string, password: string) => {
+
+    const auth = getAuth();
     try {
         await auth.api.signInEmail({
             body: {
@@ -25,6 +39,7 @@ export const signIn = async (email: string, password: string) => {
 
 }
 export const signUp = async (email: string, password: string, username: string) => {
+      const auth = getAuth();
     try {
         await auth.api.signUpEmail({
             body: {
