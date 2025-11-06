@@ -24,8 +24,3 @@ export const auth = betterAuth({
 });
 
 
-
-
-
-// configed database
-//https://medium.com/@abgkcode/building-a-full-stack-application-with-next-js-drizzle-orm-neon-postgresql-and-better-auth-6d7541fba48a
