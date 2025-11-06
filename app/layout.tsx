@@ -4,12 +4,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { Toaster } from "@/components/ui/sonner"
-import { Provider } from 'react-redux';
-import { store } from './store';
 import "./globals.css";
 import { useEffect } from "react";
 import useWishlistStore from "@/lib/store/useWishlistStore";
-import { Session } from "better-auth";
 import { authClient } from "@/lib/auth-client";
 
 const geistSans = Geist({
@@ -50,14 +47,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-<Provider store={store}>
+
         <NuqsAdapter>
 
           {children}
 
           <Toaster />
         </NuqsAdapter>
-</Provider>
+
       </body>
     </html>
   );
