@@ -77,23 +77,6 @@ export default function Home() {
     ))}
   </div>
         </section>
-        {/* wishlist */}
-<section>
-      <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Explore Events</h1>
-      <div className="flex items-center gap-4 p-6 border rounded-lg">
-        <div className="bg-gray-200 border-2 border-dashed rounded-xl w-32 h-32" />
-        <div>
-          <h3 className="font-semibold">Sunset Yoga on Beach</h3>
-          <p className="text-sm text-gray-600">$25 • Event</p>
-        </div>
-        <SavedButton />
-      </div>
-      <Link href="/wishlist" className="mt-6 inline-block text-blue-600 hover:underline">
-        → Go to Wishlist
-      </Link>
-          </div>
-          </section>
         {/* Featured */}
      <section className="py-6 px-4">
   <div className="flex items-center justify-between mb-4">

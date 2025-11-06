@@ -31,7 +31,13 @@ export default function WishlistPage() {
       try {
         const result = await getUserWishlist();
         if (result.success && result.data) {
-          setEvents(result.data);
+          setEvents(
+            result.data.map((ev: any) => ({
+              id: String(ev.id),
+              title: ev.title,
+              description: ev.description ?? undefined,
+            }))
+          );
         } else {
           toast.error(result.message || 'Failed to load wishlist.');
         }
