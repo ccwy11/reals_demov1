@@ -180,3 +180,28 @@ export const schema = {
 //later import again from form page
 //later import again from form page
 
+
+export const connections = pgTable('connections', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id')  // ← Changed from serial to text
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  connectedUserId: text('connected_user_id')  // ← Changed from serial to text
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  status: text('status').notNull().$type<'pending' | 'accepted'>().default('pending'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+  uniqueConnection: {
+    columns: [table.userId, table.connectedUserId],
+    name: 'unique_connection'
+  }
+}));
+
+export const createConnectionSchema = z.object({
+  email: z.string().email("Valid email required"),
+});
+
+export const acceptConnectionSchema = z.object({
+  connectionId: z.string().uuid(),
+});
