@@ -108,46 +108,46 @@ export function buildSkeleton(
 }
 
 
-    // ==== TEST 1 – START ====
-const testInput = {
-  destination: "Hong Kong",
-  startDate: "2025-12-01",
-  endDate: "2025-12-01",
-  preferences: ["views", "culture"],
-  travelers: 2
-};
+//     // ==== TEST 1 – START ====
+// const testInput = {
+//   destination: "Hong Kong",
+//   startDate: "2025-12-01",
+//   endDate: "2025-12-01",
+//   preferences: ["views", "culture"],
+//   travelers: 2
+// };
 
-const fakeDBEvents = [
-  {
-    id: "evt-1",
-    name: "Victoria Peak Tram",
-    location: { lat: 22.278, lng: 114.159 },
-    address: "The Peak, Hong Kong",
-    durationMin: 120,
-    priceTier: "medium" as const,
-    tags: ["views", "family"],
-    imageUrl: undefined
-  },
-  {
-    id: "evt-2",
-    name: "Temple Street Night Market",
-    location: { lat: 22.306, lng: 114.170 },
-    address: "Yau Ma Tei",
-    durationMin: 180,
-    priceTier: "free" as const,
-    tags: ["culture", "food"],
-    imageUrl: undefined
-  }
-];
+// const fakeDBEvents = [
+//   {
+//     id: "evt-1",
+//     name: "Victoria Peak Tram",
+//     location: { lat: 22.278, lng: 114.159 },
+//     address: "The Peak, Hong Kong",
+//     durationMin: 120,
+//     priceTier: "medium" as const,
+//     tags: ["views", "family"],
+//     imageUrl: undefined
+//   },
+//   {
+//     id: "evt-2",
+//     name: "Temple Street Night Market",
+//     location: { lat: 22.306, lng: 114.170 },
+//     address: "Yau Ma Tei",
+//     durationMin: 180,
+//     priceTier: "free" as const,
+//     tags: ["culture", "food"],
+//     imageUrl: undefined
+//   }
+// ];
 
-// ADD THIS: Log before and after
+// // ADD THIS: Log before and after
 
-console.log("\n=== TEST 1: SKELETON BUILD ===\n");
-const result = buildSkeleton(fakeDBEvents, testInput);
-result.forEach(slot => {
-  console.log(
-    `${slot.day} ${slot.slot} (${slot.start}-${slot.end}): ` +
-    (slot.event ? slot.event.name : "EMPTY"))
+// console.log("\n=== TEST 1: SKELETON BUILD ===\n");
+// const result = buildSkeleton(fakeDBEvents, testInput);
+// result.forEach(slot => {
+//   console.log(
+//     `${slot.day} ${slot.slot} (${slot.start}-${slot.end}): ` +
+//     (slot.event ? slot.event.name : "EMPTY"))
     
-});
-// ==== END ====
+// });
+// // ==== END ====
