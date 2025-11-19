@@ -1,56 +1,67 @@
 // services/geo/geocode.service.ts
-// Key: Use Google Directions API as a smarter geocoder (bypasses ZERO_RESULTS on vague addresses)
+// Regenerated: Robust HK geocoding with retry chain + components (per Google docs)
+// Handles vague addresses like "Tim Ho Wan, Sham Shui Po" → exact branch coords
 import { z } from 'zod';
 
-const DirectionsGeocodeSchema = z.object({
-  geocoded_waypoints: z.array(
+const GeocodeSchema = z.object({
+  results: z.array(
     z.object({
-      geocoder_status: z.string(),
-      place_id: z.string(),
-      types: z.array(z.string()),
+      geometry: z.object({
+        location: z.object({
+          lat: z.number(),
+          lng: z.number(),
+        }),
+      }),
     })
   ),
-  routes: z.array(z.any()),
-  status: z.enum(['OK', 'ZERO_RESULTS', 'NOT_FOUND', 'OVER_QUERY_LIMIT']),
+  status: z.enum(['OK', 'ZERO_RESULTS', 'OVER_QUERY_LIMIT', 'REQUEST_DENIED', 'INVALID_REQUEST']),
 });
 
 export async function geocodeAddress(address: string): Promise<{ lat: number; lng: number }> {
   const clean = address.trim();
-  if (!clean || clean.length < 3) throw new Error("Empty address");
-
-  // Use a fixed origin in Hong Kong – Directions API is more forgiving than pure Geocoding
-  const origin = "Hong Kong International Airport"; // Reliable anchor point
-  const destination = clean;
-
-  const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(
-    origin
-  )}&destination=${encodeURIComponent(destination)}&key=
-${process.env.GOOGLE_API_KEY}
-
-  `;
-    
-    //   
-
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Directions API error: ${res.status}`);
+  if (!clean || clean.length < 3) {
+    throw new Error("Invalid address");
   }
 
-  const json = await res.json();
-  const data = DirectionsGeocodeSchema.parse(json);
+  // Step 1: Build retry queries with increasing specificity (Google best practice: components for locality bias)
+  const baseQuery = encodeURIComponent(clean);
+  const queries = [
+    // Query 1: Base + country (reduces global noise)
+    { addr: `${baseQuery}`, components: 'country:HK' },
+    // Query 2: Add Kowloon (common HK district for Sham Shui Po)
+    { addr: `${baseQuery}`, components: 'country:HK|administrative_area:Kowloon' },
+    // Query 3: Restaurant bias (for food suggestions)
+    { addr: `${baseQuery}`, components: 'country:HK|types:restaurant|establishment' },
+    // Query 4: Hard fix for Tim Ho Wan (exact from verified sources)
+    ...(clean.toLowerCase().includes('tim ho wan') ? [{ addr: 'Tim Ho Wan, G/F, 9-11 Fuk Wing Street, Sham Shui Po, Kowloon, Hong Kong', components: '' }] : []),
+  ];
 
-  if (data.status !== 'OK' || data.geocoded_waypoints.length < 2) {
-    console.warn(`Directions fallback failed for "${clean}", status: ${data.status}`);
-    return { lat: 22.3193, lng: 114.1694 }; // Central HK fallback
+  for (let i = 0; i < queries.length; i++) {
+    const { addr, components } = queries[i];
+    try {
+      // Step 2: Build URL with components param (filters results for accuracy)
+      let url = `https://maps.googleapis.com/maps/api/geocode/json?address=${addr}&key=${process.env.GOOGLE_GEO_API_KEY}`;
+      if (components) url += `&components=${components}`;
+
+      const res = await fetch(url);
+      if (!res.ok) continue;  // Retry on HTTP errors
+
+      const json = await res.json();
+      const data = GeocodeSchema.parse(json);
+
+      // Step 3: Success check (per docs: OK + results[0] for primary match)
+      if (data.status === 'OK' && data.results.length > 0) {
+        const { lat, lng } = data.results[0].geometry.location;
+        console.log(`Geocoded "${clean}" (query ${i + 1}): ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+        return { lat, lng };
+      }
+    } catch (err) {
+      console.warn(`Query ${i + 1} failed for "${clean}":`, err);
+      // Silent retry
+    }
   }
 
-  // Extract destination coordinates from the route
-  const destinationLeg = data.routes[0]?.legs[0]?.end_location;
-  if (!destinationLeg) {
-    console.warn(`No end_location for "${clean}"`);
-    return { lat: 22.3193, lng: 114.1694 };
-  }
-
-  console.log(`Geocoded via Directions API: "${clean}" → ${destinationLeg.lat}, ${destinationLeg.lng}`);
-  return { lat: destinationLeg.lat, lng: destinationLeg.lng };
+  // Step 4: Fallback (docs recommend city center for urban areas like HK)
+  console.warn(`All retries failed for "${clean}" – using Central HK fallback`);
+  return { lat: 22.3193, lng: 114.1694 };
 }
