@@ -1,57 +1,57 @@
 // services/transport/injector.ts
 import { ItinerarySlot } from '@/types/itinerary';
+import { getRealHKTransport } from './google-routes';
 
 
-
-export async function injectTransport(slots: ItinerarySlot[]): Promise<ItinerarySlot[]> {
-  const final: ItinerarySlot[] = [];
+export async function injectRealTransport(slots: ItinerarySlot[]): Promise<ItinerarySlot[]> {
+ const cleanAddress = (addr: string) => 
+  addr.replace(/District.*|Island.*|Level \d+.*/gi, '').replace(/,\s*,/g, ',').trim() + ', Hong Kong';
+ 
+  const result: ItinerarySlot[] = [];
 
   for (let i = 0; i < slots.length; i++) {
-    const current = { ...slots[i] };
+    const current = slots[i];
+    result.push(current); // Add the event/activity
 
-    // Always push the event itself
-    final.push(current);
-
-    // If there's a next event with coords, add transport
-    if (i < slots.length - 1 && current.event && slots[i + 1].event) {
-      const from = current.event.location;
-      const to = slots[i + 1].event.location;
-
+    const next = slots[i + 1];
+    if (current.event?.address && next?.event?.address) {
       try {
-        const route = await getRoute(from, to, 'transit');
+        const transport = await getRealHKTransport(
+ cleanAddress(current.event.address),
+  cleanAddress(next.event.address),
+          // 'TRAFFIC_UNAWARE'
+        );
 
-        // Add transport slot right after current event
-        final.push({
+        // CHANGE 1: Correct start/end time
+        const transportStart = current.end;
+        const transportEnd = addMinutes(transportStart, transport.duration_min);
+
+        // CHANGE 2: Save real from/to names + real distance
+        result.push({
           day: current.day,
-          slot: 'transport' as const,
-          start: current.end,
-          end: addMinutes(current.end, route.duration_min),
+          slot: 'transport' as any,
+          start: transportStart,
+          end: transportEnd,
           event: undefined,
           transport: {
-            mode: route.mode,
-            duration_min: route.duration_min,
-            distance_km: route.distance_km,
-            summary: route.summary,
-          },
-        });
+            mode: transport.mode,
+            duration_min: transport.duration_min,
+            distance_km: transport.distance_km,        // Real distance from Google
+            from: current.event.name,                  // CHANGE: Save name
+            to: next.event.name                        // CHANGE: Save name
+          }
+        } as any);
       } catch (err) {
-        console.warn("Transport failed, inserting walk fallback", err);
-        final.push({
-          day: current.day,
-          slot: 'transport' as const,
-          start: current.end,
-          end: addMinutes(current.end, 15),
-          event: undefined,
-          transport: { mode: 'walk', duration_min: 15, summary: "Walk / short taxi" },
-        });
+        console.warn("Transport failed, skipping:", err);
+        // No fallback transport slot on error
       }
     }
   }
 
-  return final;
+  return result;
 }
 
-// Helper: "12:00" + 25 mins → "12:25"
+// Helper – unchanged
 function addMinutes(time: string, mins: number): string {
   const [h, m] = time.split(':').map(Number);
   const total = h * 60 + m + mins;

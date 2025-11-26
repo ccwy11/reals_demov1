@@ -23,6 +23,7 @@ function getDateRange(start: string, end: string): string[] {
 function getTimeRange(slot: string): { start: string; end: string } {
   const ranges: Record<string, { start: string; end: string }> = {
     morning: { start: '09:00', end: '12:00' },
+    lunch:{ start: '12:00', end: '13:00' },
     afternoon: { start: '13:00', end: '17:00' },
     evening: { start: '18:00', end: '21:00' }
   };
@@ -62,10 +63,6 @@ prefs: string[]
       score: e.tags.filter(t => prefs.includes(t)).length   // higher = better
     }))
     .sort((a, b) => b.score - a.score);                    // ← SORT DESC
-
-  // Optional debug (remove later)
-  console.log(`Slot ${range.start}-${range.end} | Duration: ${slotDuration} min`);
-  console.log("Candidates:", candidates.map(c => ({ name: c.event.name, score: c.score })));
 
   return candidates[0]?.event;
   // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
@@ -107,47 +104,3 @@ export function buildSkeleton(
   return slots;
 }
 
-
-//     // ==== TEST 1 – START ====
-// const testInput = {
-//   destination: "Hong Kong",
-//   startDate: "2025-12-01",
-//   endDate: "2025-12-01",
-//   preferences: ["views", "culture"],
-//   travelers: 2
-// };
-
-// const fakeDBEvents = [
-//   {
-//     id: "evt-1",
-//     name: "Victoria Peak Tram",
-//     location: { lat: 22.278, lng: 114.159 },
-//     address: "The Peak, Hong Kong",
-//     durationMin: 120,
-//     priceTier: "medium" as const,
-//     tags: ["views", "family"],
-//     imageUrl: undefined
-//   },
-//   {
-//     id: "evt-2",
-//     name: "Temple Street Night Market",
-//     location: { lat: 22.306, lng: 114.170 },
-//     address: "Yau Ma Tei",
-//     durationMin: 180,
-//     priceTier: "free" as const,
-//     tags: ["culture", "food"],
-//     imageUrl: undefined
-//   }
-// ];
-
-// // ADD THIS: Log before and after
-
-// console.log("\n=== TEST 1: SKELETON BUILD ===\n");
-// const result = buildSkeleton(fakeDBEvents, testInput);
-// result.forEach(slot => {
-//   console.log(
-//     `${slot.day} ${slot.slot} (${slot.start}-${slot.end}): ` +
-//     (slot.event ? slot.event.name : "EMPTY"))
-    
-// });
-// // ==== END ====

@@ -3,6 +3,8 @@
 // Handles vague addresses like "Tim Ho Wan, Sham Shui Po" → exact branch coords
 import { z } from 'zod';
 
+const API_KEY = process.env.GOOGLE_MAPS_ROUTES_API_KEY;
+
 const GeocodeSchema = z.object({
   results: z.array(
     z.object({
@@ -40,7 +42,7 @@ export async function geocodeAddress(address: string): Promise<{ lat: number; ln
     const { addr, components } = queries[i];
     try {
       // Step 2: Build URL with components param (filters results for accuracy)
-      let url = `https://maps.googleapis.com/maps/api/geocode/json?address=${addr}&key=${process.env.GOOGLE_GEO_API_KEY}`;
+      let url = `https://maps.googleapis.com/maps/api/geocode/json?address=${addr}&key=${API_KEY}`;
       if (components) url += `&components=${components}`;
 
       const res = await fetch(url);
@@ -52,7 +54,7 @@ export async function geocodeAddress(address: string): Promise<{ lat: number; ln
       // Step 3: Success check (per docs: OK + results[0] for primary match)
       if (data.status === 'OK' && data.results.length > 0) {
         const { lat, lng } = data.results[0].geometry.location;
-        console.log(`Geocoded "${clean}" (query ${i + 1}): ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+        // console.log(`Geocoded "${clean}" (query ${i + 1}): ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
         return { lat, lng };
       }
     } catch (err) {
